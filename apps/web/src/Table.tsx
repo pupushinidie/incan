@@ -199,7 +199,9 @@ export function PathView({ game, layout, width, players, fx, cardRef, slotRef, e
               ].join(" ")}
               style={{ left: spot.left, top: spot.top, zIndex: index + 1 }}
               title={cardTitle(card, taken, lost, fx.takenBy.get(index), value)}
-              data-tutorial={card.kind === "artifact" && value ? "path-artifact" : undefined}
+              data-tutorial={index === game.path.length - 1 ? "last-card" : card.kind === "artifact" && value ? "path-artifact" : undefined}
+              data-card={index}
+              data-kind={card.kind}
             >
               <Px src={cardArt(card)} w={CARD_W} h={CARD_H} s={s} alt={cardTitle(card, taken, lost, undefined, value)} />
               {crack && <span className="ig-crack" />}
@@ -366,8 +368,8 @@ function TentCard({ game, player, index, layout, member, self, spectating, float
         <strong title={player.name}>{player.name}</strong>
         {self && !spectating && <small className="ig-tag you">你</small>}
         {member?.bot && <small className="ig-tag bot">人机</small>}
-        {!member?.bot && member?.auto && <small className="ig-tag auto">托管</small>}
-        {!member?.bot && offline && <small className="ig-tag off">离线</small>}
+        {!member?.bot && member?.auto && <small className="ig-tag auto" title="托管中：人机在替他选">托管</small>}
+        {!member?.bot && offline && <small className="ig-tag off" title="掉线了，人机在替他选；回来就交还">{layout.bigNames ? "离线·代打" : "离线"}</small>}
       </div>
       <div className="ig-tent-stats">
         {trapped ? (

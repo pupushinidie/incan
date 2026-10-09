@@ -447,7 +447,7 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
             聊天{sideTabs.unread > 0 && <em>{sideTabs.unread}</em>}
           </button>
         </div>
-        {sideTabs.tab === "log" && (log.length === 0 ? <p className="ig-muted">还没有动作。</p> : <ul className="ig-log">{log.map((line) => <li key={line.key}>{line.text}</li>)}</ul>)}
+        {sideTabs.tab === "log" && (log.length === 0 ? <p className="ig-muted">{game.history.length || game.departures.length ? "之前各局的结果在「各局」里。" : "还没有动作。"}</p> : <ul className="ig-log">{log.map((line) => <li key={line.key}>{line.text}</li>)}</ul>)}
         {sideTabs.tab === "rounds" && <RoundsList game={game} nameOf={nameOf} />}
         {sideTabs.tab === "chat" && <div className="ig-chat">{chat}</div>}
       </section>

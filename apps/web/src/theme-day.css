@@ -5,3 +5,12 @@
 :root[data-theme="day"] { color-scheme: light; }
 :root[data-theme="day"] .app-shell * { scrollbar-color: #c4b090 var(--bg); }
 
+
+/* 牌桌：飘字的投影换成白色，深色按钮、卡上小条保持夜间的字色 */
+:root[data-theme="day"] .ig-float { text-shadow: 2px 2px 0 #ffffff; }
+:root[data-theme="day"] .ig-card-float { color: #c8f5d8; background: rgba(5, 10, 11, 0.9); }
+:root[data-theme="day"] .ig-card-note { color: #f6e8b8; background: rgba(5, 10, 11, 0.88); }
+:root[data-theme="day"] .ig-choice-btn { color: #f6e8b8; }
+:root[data-theme="day"] .ig-toast.danger { color: #fff4ec; }
+:root[data-theme="day"] .ig-summary-banner, :root[data-theme="day"] .app-shell .ig-final-banner h2 { color: #f6e8b8; text-shadow: 2px 2px 0 #050a0b; }
+:root[data-theme="day"] .ig-hazard.boom small { color: #fff4ec; }

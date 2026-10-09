@@ -78,7 +78,7 @@
 .ig-stat small { color: var(--muted); font-size: 12px; line-height: 12px; white-space: nowrap; }
 .ig-stat b { font-size: 24px; font-weight: 400; line-height: 26px; }
 .ig-stat b i { margin: 0 2px; color: var(--muted); font-style: normal; }
-.ig-next-art { display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+.ig-stat > .ig-next-art { display: flex; flex-direction: row; align-items: center; gap: 4px; margin-left: 4px; }
 .ig-next-art small { line-height: 14px; }
 .ig-noart { padding: 4px 8px; color: var(--muted); background: rgba(255, 255, 255, 0.06); }
 .ig-bust b { min-width: 3em; }
@@ -348,10 +348,10 @@
   --rim: var(--gold-2);
   position: absolute;
   z-index: 65;
-  left: 50%;
+  right: 16px;
   bottom: 12px;
   display: flex;
-  width: min(560px, calc(100% - 32px));
+  width: min(480px, calc(100% - 32px));
   flex-direction: column;
   align-items: center;
   gap: 8px;
@@ -359,9 +359,9 @@
   box-sizing: border-box;
   background: rgba(13, 25, 24, 0.96);
   text-align: center;
-  transform: translateX(-50%);
-  animation: ig-toast-in 0.3s steps(3, jump-none);
+  animation: ig-summary-in 0.3s steps(3, jump-none);
 }
+@keyframes ig-summary-in { from { transform: translateY(12px); } }
 .ig-summary-banner {
   display: grid;
   width: 320px;
@@ -522,7 +522,7 @@
 .ig-screen.mobile .ig-status { display: none; }
 .ig-screen.mobile .ig-toast { top: 120px; }
 .ig-screen.mobile .ig-path:has(.ig-summary) { z-index: 5; overflow: visible; }
-.ig-screen.mobile .ig-summary { top: calc(100% - 24px); bottom: auto; width: calc(100% - 8px); padding: 0 8px 10px; }
+.ig-screen.mobile .ig-summary { top: calc(100% - 24px); right: 4px; bottom: auto; width: calc(100% - 8px); padding: 0 8px 10px; }
 .ig-screen.mobile .ig-summary-banner { margin-top: -16px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -599,6 +599,7 @@
   .app-shell.ig-home .ig-hero { height: 200px; }
   .ig-hero-cards { gap: 4px; bottom: 10px; }
   .ig-hero-camp { display: none; }
+  .ig-hero-cards img { width: 40px; height: 56px; }
 }
 
 /* ---------- 等候房间：一屏放下（5 人以上时玩家列表分两列） ---------- */
@@ -676,6 +677,7 @@
 
 /* ---------- 规则弹窗 ---------- */
 .app-shell .gm-panel.ig-rules { --rim: var(--gold-2); width: min(820px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; box-sizing: border-box; text-align: left; }
+.app-shell .gm-modal-backdrop { white-space: normal; }
 .ig-rules .game-rules-block + .game-rules-block { margin-top: 14px; }
 .app-shell .ig-rules .game-rules-block h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; color: var(--gold); font-size: 24px; font-weight: 400; }
 .app-shell .ig-rules .game-rules-block :is(p, li) { margin: 0; color: var(--text); font-size: 12px; line-height: 1.8; }

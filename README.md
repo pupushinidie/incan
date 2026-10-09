@@ -91,7 +91,7 @@ node scripts/spy.mjs # 抓包：连上正在跑的服务器（3019），两个�
 | `apps/server/test/hidden.test.ts` | 进程内抓包：三个玩家 + 观战 + 首页连接的每一条推送和原始帧 |
 | `apps/server/test/bots.test.ts` `spectate.test.ts` `kickSession.test.ts` `admin.test.ts` | 继承的人机托管、观战、挤登录、管理员解散 |
 
-网页现在是**调试牌桌**（引擎阶段放的，正式界面由界面阶段做）：显示整个状态，每个合法行动一个按钮。
+网页界面见下面「网页界面」一节。
 
 ### 一个人怎么测（陪玩脚本）
 
@@ -103,6 +103,22 @@ node scripts/test-bot.mjs solo 5           # 不等真人：5 个机器人自己
 ```
 
 环境变量：`BOT_DELAY_MS`（每步思考时间，默认 800）、`BOT_IDLE=1`（只挂着不动，等超时）、`BOT_LEAVE=0.3`（每次选离开的概率）、`INCAN_NO_ARTIFACTS=1`（建房开「无神器」）、`SERVER_URL`。
+
+## 网页界面（`apps/web`）
+
+一屏放下：顶栏一行（5 个神庙局数、一句状态、倒计时、按钮）；牌桌从上到下是**情况条**（5 种危险：这局出过的红框 = 再来一张就塌方，牌堆里还剩几张、整局移出几张；牌堆张数、路上余数、神器 路上/牌堆、下一件值 5 还是 10 分、「下一张塌方」概率）→ **神庙路径**（卡 40×56 按实测尺寸挑 1×/2×/3×，放不下时后面的牌叠放）→ **营地**（每人一张帐篷卡：在神庙 / 已回营地 / 被困，决定小卡，手上几颗，神器件数和徽章，你 / 人机 / 托管 / 离线标签）→ **操作条**（「继续挖」「回营地」两个大按钮，下面一行写后果；倒计时；自己的手上 / 帐篷 / 神器）。宽 ≥1200 时右边是状态和「记录 / 各局 / 聊天」，窄了收进抽屉；手机上从上往下排。
+
+| 文件 | 内容 |
+|---|---|
+| `src/GameBoard.tsx` | 牌桌：状态文字、决定（点按钮 / 键盘 1、2、Esc）、特效（只看 `game.version`；计时器在持久表里）、局末小结、终局结算 |
+| `src/Table.tsx` | 情况条、路径、营地帐篷卡 |
+| `src/layout.ts` | 按牌桌实测宽高挑卡牌、帐篷的整数倍 |
+| `src/art.ts` | 美术文件名（和 `art/spec.md` 一一对应，正式美术同名覆盖不用改代码）、玩家色 |
+| `src/words.ts` | 记录里的话、神器名字 |
+| `src/incan.css` | 牌桌、首页、等候房间、规则弹窗的样式；`day-palette.ts` + `src/theme-day.css` 是白天版 |
+| `src/preview.tsx` | 预览页：`/preview.html?s=场景&v=座位&offline=&bots=&auto=&t=&all=1&err=&from=&chat=1&nav=0`，场景 = 规则包的 `SCENE_LIST` + `UI_SCENES`（最长路径、只差你一个、你已回营等）+ `ROOM_SCENES`（等候房间） |
+
+教程锚点（`data-tutorial`）的清单在流水线交接报告 `handoff/ui.md`。
 
 ## 目录
 
@@ -116,7 +132,7 @@ node scripts/test-bot.mjs solo 5           # 不等真人：5 个机器人自己
 | `packages/game/src/roomTypes.ts` | 房间、观战、socket 事件类型 |
 | `packages/game/test/` | 规则书用例、补充用例、隐藏信息、随机对局；`test/acceptance/` 归规则核对，引擎不改 |
 | `apps/server/` | Socket.IO 房间服务器、测试（人机、观战、挤登录、对局流程、抓包） |
-| `apps/web/` | 网页（现在是调试牌桌）；`preview.html` + `src/preview.tsx` 是预览页，提交进仓库，由界面维护 |
+| `apps/web/` | 网页（见「网页界面」）；`preview.html` + `src/preview.tsx` 是预览页，提交进仓库，由界面维护 |
 | `scripts/test-bot.mjs` | 陪玩脚本；`scripts/spy.mjs` 抓包脚本 |
 
 ## 对外接口（`@incan/game`）
