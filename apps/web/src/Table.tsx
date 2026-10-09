@@ -366,10 +366,12 @@ function TentCard({ game, player, index, layout, member, self, spectating, float
       <div className="ig-tent-name">
         <Px src={art.mark(color)} w={10} h={10} s={layout.bigNames ? 2 : 1} className="ig-mark" />
         <strong title={player.name}>{player.name}</strong>
-        {self && !spectating && <small className="ig-tag you">你</small>}
+        <span className="ig-tags">
+          {self && !spectating && <small className="ig-tag you">你</small>}
         {member?.bot && <small className="ig-tag bot">人机</small>}
         {!member?.bot && member?.auto && <small className="ig-tag auto" title="托管中：人机在替他选">托管</small>}
         {!member?.bot && offline && <small className="ig-tag off" title="掉线了，人机在替他选；回来就交还">{layout.bigNames ? "离线·代打" : "离线"}</small>}
+        </span>
       </div>
       <div className="ig-tent-stats">
         {trapped ? (

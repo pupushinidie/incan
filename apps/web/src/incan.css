@@ -212,6 +212,8 @@
 .ig-camp.big .ig-tent-name { height: 28px; font-size: 24px; }
 .ig-tent-name strong { min-width: 0; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .ig-tent.self .ig-tent-name strong { color: var(--gold); }
+.ig-tags { display: flex; flex: 0 0 auto; gap: 2px; }
+.ig-tags:empty { display: none; }
 .ig-tag { flex: 0 0 auto; padding: 0 3px; font-size: 12px; line-height: 16px; }
 .ig-tag.you { color: #2a1c06; background: var(--gold); }
 .ig-tag.bot { color: #d8e8ff; background: #2a62c0; }
@@ -508,6 +510,7 @@
 .ig-screen.mobile .ig-tent-stats { height: 24px; }
 .ig-screen.mobile .ig-tent-stats small { display: none; }
 .ig-screen.mobile .ig-tag { padding: 0 2px; }
+.ig-screen.mobile .ig-tags { position: absolute; top: 2px; right: 2px; flex-direction: column; align-items: flex-end; }
 .ig-screen.mobile .ig-action { flex-wrap: wrap; gap: 6px; min-height: 0; padding: 6px; }
 .ig-screen.mobile .ig-choices { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; }
 .ig-screen.mobile .ig-choice-btn { flex: 1 1 0; min-width: 0; height: 64px; gap: 6px; padding: 0 6px 0 4px; }
@@ -518,9 +521,10 @@
 .ig-screen.mobile .ig-mine { flex: 1 1 auto; justify-content: flex-start; gap: 12px; margin-left: 0; }
 .ig-screen.mobile .ig-action-tools { flex-direction: row; }
 .ig-screen.mobile .ig-action-feedback { position: static; flex: 1 1 100%; }
-.ig-screen.mobile .ig-side { min-height: 360px; }
+.ig-screen.mobile .ig-side { height: 420px; }
+.ig-screen.mobile .ig-float { font-size: 12px; }
 .ig-screen.mobile .ig-status { display: none; }
-.ig-screen.mobile .ig-toast { top: 120px; }
+.ig-screen.mobile .ig-toast { top: 120px; width: calc(100% - 16px); max-width: none; }
 .ig-screen.mobile .ig-path:has(.ig-summary) { z-index: 5; overflow: visible; }
 .ig-screen.mobile .ig-summary { top: calc(100% - 24px); right: 4px; bottom: auto; width: calc(100% - 8px); padding: 0 8px 10px; }
 .ig-screen.mobile .ig-summary-banner { margin-top: -16px; }
