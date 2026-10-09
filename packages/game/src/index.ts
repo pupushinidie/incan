@@ -1,36 +1,47 @@
 export * from "./types.js";
 export {
+  advance,
+  advanceGame,
   apply,
   applyCommand,
+  artifactValue,
   autoCommand,
+  bustChance,
+  buildDeck,
+  computeFinalResult,
   createGame,
+  decideAll,
+  deckInfo,
   defaultConfig,
-  LINE_SIZE,
+  isAutoPhase,
   legalActions,
-  pendingSlot,
-  pickRow,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  noneRemoved,
+  pendingDeciders,
   redactGameForViewer,
-  selectableSlots,
+  scoreLine,
+  splitGems,
+  stackDeck,
   timeoutTurn,
+  timerKey,
+  timerMs,
 } from "./engine.js";
-export type { NewPlayer } from "./engine.js";
+export type { DeckInfo, NewPlayer, RedactOptions } from "./engine.js";
+export { cardLabel, parseCard } from "./cards.js";
+export type { CardSpec } from "./cards.js";
 export {
-  baseScore,
-  bounds,
-  castleKingdom,
-  DIRS,
-  isCentered,
-  key,
-  legalPlacements,
-  parseKey,
-  placeInto,
-  placementError,
-  rank,
-  regions,
-  scoreKingdom,
-} from "./kingdom.js";
-export { DOMINOES, domino } from "./dominoes.js";
-export { botCommand, bestPlacement } from "./bot.js";
+  buildScene,
+  checkConservation,
+  previewRoom,
+  previewScene,
+  previewSocketId,
+  SCENE_LIST,
+  SCENE_NAMES_ZH,
+  SCENES,
+} from "./scenes.js";
+export type { PreviewRoomOptions, SceneName, SceneSpec } from "./scenes.js";
+export { botCommand } from "./bot.js";
 export { createRng } from "./rng.js";
 export type { Rng } from "./rng.js";
 export { CAPACITY_OPTIONS, DEFAULT_ROOM_ACCESS } from "./roomTypes.js";

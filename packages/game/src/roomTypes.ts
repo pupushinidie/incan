@@ -1,7 +1,7 @@
 import type { GameCommand, GameOptions, GameState } from "./types.js";
 
-/** 房间人数：2–4 人（规格书 minPlayers / maxPlayers）。 */
-export const CAPACITY_OPTIONS = [2, 3, 4] as const;
+/** 房间人数：3–8 人（官方人数）。一个真人加人机也能凑够 3 人开局。 */
+export const CAPACITY_OPTIONS = [3, 4, 5, 6, 7, 8] as const;
 export type Capacity = (typeof CAPACITY_OPTIONS)[number];
 
 export interface LobbyMember {
@@ -21,7 +21,7 @@ export interface LobbyMember {
 export interface RoomAccess {
 	/** 允许观战：有房间码、或者从首页列表都能进来看。 */
 	readonly allowSpectators: boolean;
-	/** 观战的人能看到所有人的手牌（上帝视角）；关掉时只看公开信息。牌堆顺序始终看不到。 */
+	/** 观战的人能看到所有人帐篷里的宝石（上帝视角）；关掉时只看公开信息。牌堆顺序、种子、决定中的选择始终看不到。 */
 	readonly spectatorsSeeAll: boolean;
 	/** 公开房间：不认识的人也能从首页列表直接加入空座位。 */
 	readonly open: boolean;
@@ -47,7 +47,10 @@ export interface LobbyRoomSnapshot {
 	readonly members: LobbyMember[];
 	readonly chat: RoomChatMessage[];
 	readonly game?: GameState;
-	/** 当前回合剩余的毫秒数（发送时）；超时自动替当前玩家选一个合法动作。 */
+	/**
+	 * 这一步剩余的毫秒数（发送时）。decide 阶段：还没决定的真人的倒计时，到点按「离开」处理；
+	 * 自动阶段（start / skip / reveal / roundEnd）：离自动翻下一张 / 开下一局还有多久。人机、托管、离线的人不显示倒计时。
+	 */
 	readonly turnRemainingMs?: number;
 	/** 整轮结束后的「是否继续」投票；remainingMs 为发送时剩余的毫秒数。 */
 	readonly rematch?: RematchState;
@@ -111,6 +114,8 @@ export interface PublicRoomSummary {
 	readonly id: string;
 	readonly status: "waiting" | "playing" | "finished";
 	readonly capacity: Capacity;
+	/** 对局中：第几局（1–5）。 */
+	readonly round?: number;
 	readonly open: boolean;
 	readonly allowSpectators: boolean;
 	readonly spectators: number;
@@ -119,6 +124,7 @@ export interface PublicRoomSummary {
 		readonly isHost: boolean;
 		readonly connected: boolean;
 		readonly bot?: boolean;
+		/** 只在对局结束后给（帐篷宝石是隐藏信息，对局中不能从列表里看到总分）。 */
 		readonly score?: number;
 		readonly isActive?: boolean;
 		readonly isWinner?: boolean;
