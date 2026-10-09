@@ -112,7 +112,7 @@
   animation: ig-sprite 0.72s steps(6, jump-none) infinite;
   filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
 }
-.ig-path-empty { position: absolute; top: calc(var(--ch) / 2 - 14px); left: 0; margin: 0; color: var(--muted); font-size: 24px; white-space: nowrap; }
+.ig-path-empty { position: absolute; top: calc(var(--ch) + 16px); left: 0; margin: 0; color: var(--muted); font-size: 24px; white-space: nowrap; }
 .ig-card { position: absolute; width: var(--cw); height: var(--ch); filter: drop-shadow(calc(var(--px) * 2) calc(var(--px) * 2) 0 rgba(0, 0, 0, 0.55)); }
 .ig-card.fresh { animation: ig-flip 0.45s steps(5, jump-none); transform-origin: 50% 50%; }
 @keyframes ig-flip {
@@ -321,7 +321,7 @@
 .ig-action-tools { display: flex; flex: 0 0 auto; flex-direction: column; align-items: stretch; gap: 6px; }
 .ig-action-tools:empty, .ig-hint-slot:empty { display: none; }
 .app-shell .ig-action-tools .quiet-button { padding: 4px 12px; font-size: 12px; white-space: nowrap; }
-.ig-action-feedback { position: absolute; left: 12px; bottom: 2px; margin: 0; font-size: 12px; }
+.ig-action-feedback { position: absolute; z-index: 5; left: 12px; bottom: calc(100% + 6px); margin: 0; padding: 2px 8px; background: rgba(10, 18, 20, 0.95); box-shadow: 0 0 0 var(--px) var(--edge); font-size: 12px; }
 
 /* ---------- 浮出提示、局末小结 ---------- */
 .ig-toast {
@@ -350,14 +350,15 @@
   --rim: var(--gold-2);
   position: absolute;
   z-index: 65;
-  right: 16px;
-  bottom: 12px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
   display: flex;
-  width: min(480px, calc(100% - 32px));
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 0 20px 16px;
+  justify-content: center;
+  gap: 4px 16px;
+  padding: 8px 12px;
   box-sizing: border-box;
   background: rgba(13, 25, 24, 0.96);
   text-align: center;
@@ -366,15 +367,15 @@
 @keyframes ig-summary-in { from { transform: translateY(12px); } }
 .ig-summary-banner {
   display: grid;
-  width: 320px;
-  height: 64px;
-  margin-top: -24px;
+  flex: 0 0 auto;
+  width: 160px;
+  height: 32px;
   place-items: center;
   color: #f6e8b8;
-  background: center / 320px 64px no-repeat;
+  background: center / 160px 32px no-repeat;
   image-rendering: pixelated;
-  font-size: 24px;
-  text-shadow: 2px 2px 0 #050a0b;
+  font-size: 12px;
+  text-shadow: 1px 1px 0 #050a0b;
 }
 .ig-summary p { margin: 0; color: var(--text); font-size: 12px; line-height: 1.6; }
 .ig-summary p.big { font-size: 24px; line-height: 1.3; }
@@ -511,6 +512,7 @@
 .ig-screen.mobile .ig-tent-stats small { display: none; }
 .ig-screen.mobile .ig-tag { padding: 0 2px; }
 .ig-screen.mobile .ig-tags { position: absolute; top: 2px; right: 2px; flex-direction: column; align-items: flex-end; }
+.ig-screen.mobile .ig-tent-top { justify-content: flex-start; gap: 4px; }
 .ig-screen.mobile .ig-action { flex-wrap: wrap; gap: 6px; min-height: 0; padding: 6px; }
 .ig-screen.mobile .ig-choices { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; }
 .ig-screen.mobile .ig-choice-btn { flex: 1 1 0; min-width: 0; height: 64px; gap: 6px; padding: 0 6px 0 4px; }
@@ -520,14 +522,13 @@
 .ig-screen.mobile .ig-action-note { flex: 1 1 100%; }
 .ig-screen.mobile .ig-mine { flex: 1 1 auto; justify-content: flex-start; gap: 12px; margin-left: 0; }
 .ig-screen.mobile .ig-action-tools { flex-direction: row; }
-.ig-screen.mobile .ig-action-feedback { position: static; flex: 1 1 100%; }
+.ig-screen.mobile .ig-action-feedback { position: static; flex: 1 1 100%; padding: 0; background: none; box-shadow: none; }
 .ig-screen.mobile .ig-side { height: 420px; }
 .ig-screen.mobile .ig-float { font-size: 12px; }
 .ig-screen.mobile .ig-status { display: none; }
 .ig-screen.mobile .ig-toast { top: 120px; width: calc(100% - 16px); max-width: none; }
 .ig-screen.mobile .ig-path:has(.ig-summary) { z-index: 5; overflow: visible; }
-.ig-screen.mobile .ig-summary { top: calc(100% - 24px); right: 4px; bottom: auto; width: calc(100% - 8px); padding: 0 8px 10px; }
-.ig-screen.mobile .ig-summary-banner { margin-top: -16px; }
+.ig-screen.mobile .ig-summary { top: calc(100% - 8px); right: 4px; bottom: auto; left: 4px; padding: 6px 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   .ig-card.fresh, .ig-card.wobble, .ig-explorer, .ig-path.collapse, .ig-choice-card.flip, .ig-choice-wait, .ig-timer.low, .ig-big-timer.low,
@@ -662,6 +663,7 @@
   .ig-room .room-code-panel { grid-column: 1; grid-row: 1; min-height: 0; overflow-y: auto; }
   .ig-room .player-panel { grid-column: 2; grid-row: 1 / 3; }
   .ig-room .ig-room-chat { grid-column: 1; grid-row: 2; }
+  .ig-room .player-list.many .player-details strong { font-size: 12px; }
 }
 @media (max-width: 759px) {
   .app-shell.ig-room { width: calc(100% - 32px); }
@@ -690,3 +692,15 @@
 .ig-rules-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 4px 0 8px; }
 .ig-rules-row figure { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0; color: var(--muted); font-size: 12px; }
 .ig-rules .gm-panel-actions { margin-top: 16px; }
+
+/* 手机上的结算：宝箱 1×、名次行收紧，「再来一局」放在第一排整行，第一屏就看得到 */
+@media (max-width: 759px) {
+  .app-shell .gm-panel.ig-final { padding: 8px 12px 14px; }
+  .app-shell .ig-final .ig-chest { width: 64px; height: 48px; }
+  .ig-final-head { margin-bottom: 6px; }
+  .ig-standings { gap: 4px; margin-bottom: 8px; }
+  .ig-standings li { gap: 8px; padding: 6px 8px; }
+  .ig-final-score { font-size: 24px; }
+  .ig-standing-arts { display: none; }
+  .app-shell .ig-final .gm-panel-actions .primary-button { order: -1; flex-basis: 100%; }
+}
