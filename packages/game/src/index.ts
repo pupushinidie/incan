@@ -41,7 +41,8 @@ export {
   SCENES,
 } from "./scenes.js";
 export type { PreviewRoomOptions, SceneName, SceneSpec } from "./scenes.js";
-export { botCommand } from "./bot.js";
+export { BOT_NOISE, BOT_RHO_MAX, BOT_RHO_MIN, botAdvice, botCommand, botPersonality, HINT_RHO } from "./bot.js";
+export type { BotAdvice, BotAnalysis, BotOptions } from "./bot.js";
 export { createRng } from "./rng.js";
 export type { Rng } from "./rng.js";
 export { CAPACITY_OPTIONS, DEFAULT_ROOM_ACCESS } from "./roomTypes.js";
