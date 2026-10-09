@@ -48,8 +48,8 @@ export interface LobbyRoomSnapshot {
 	readonly chat: RoomChatMessage[];
 	readonly game?: GameState;
 	/**
-	 * 这一步剩余的毫秒数（发送时）。decide 阶段：还没决定的真人的倒计时，到点按「离开」处理；
-	 * 自动阶段（start / skip / reveal / roundEnd）：离自动翻下一张 / 开下一局还有多久。人机、托管、离线的人不显示倒计时。
+	 * 这一步剩余的毫秒数（发送时）。decide 阶段：这张牌的决定倒计时（还有在线、没托管的真人没决定时才有，所有人都收到），
+	 * 到点没决定的人按「离开」处理；自动阶段（start / skip / reveal / roundEnd）：离自动翻下一张 / 开下一局还有多久。
 	 */
 	readonly turnRemainingMs?: number;
 	/** 整轮结束后的「是否继续」投票；remainingMs 为发送时剩余的毫秒数。 */
