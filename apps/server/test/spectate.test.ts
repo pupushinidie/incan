@@ -16,18 +16,21 @@ import {
 
 // ---------- 每款游戏不一样的地方 ----------
 /** 最小的房间人数（对局要坐满才开始测）。 */
-const CAPACITY: Capacity = 2;
-/** 这款游戏有没有藏起来的信息（多米诺王国只有别人提前放好的位置，观战一律看不到，不做「观战看全部」开关）。 */
-const HIDDEN_INFO = false;
-/** 开局后先走几步（每步选轮到的人的第一个合法动作），让场上有藏起来的牌。 */
-const STEPS = 4;
+const CAPACITY: Capacity = 3;
+/** 这款游戏有没有藏起来的信息：印加宝藏是帐篷里的宝石（观战看帐篷开关）。 */
+const HIDDEN_INFO = true;
+/** 开局后先走几步（每步选第一个能动的人的第一个合法动作：没决定的人选「离开」那个会让他把宝石存进帐篷），让帐篷里有宝石。 */
+const STEPS = 6;
 /** 只在服务端的字段（牌堆顺序、种子等），观战的人永远拿不到。 */
-const SERVER_ONLY = ["seed", "rngState", "deck", "setAside", "log"];
-/** 这份状态里看得到几样藏起来的东西（手牌之类）。 */
-function secretsSeen(_game: GameState): number {
-  return 0;
+const SERVER_ONLY = ["seed", "rngState", "deck", "log"];
+/** 这份状态里看得到几样藏起来的东西：看得到数字的帐篷（null 表示藏起来了）。 */
+function secretsSeen(game: GameState): number {
+  return game.players.filter((player) => player.tent !== null).length;
 }
 // ----------------------------------------
+
+// 自动阶段（开局、亮出、局末）不停顿，测试才跑得快（服务端在导入时读）。
+process.env.PAUSE_SCALE = "0";
 
 type TestSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -195,11 +198,15 @@ describe("观战和公开房间", () => {
     await updateWhere(viewer, (snapshot) => snapshot.game !== undefined);
     for (const client of players) await updateWhere(client, (snapshot) => snapshot.game !== undefined);
 
-    // 先走几步，让场上有藏起来的牌。
+    // 先走几步，让场上有藏起来的东西（第一个人选离开，把宝石存进帐篷）。
     for (let step = 0; step < STEPS; step += 1) {
-      const mover = players.find((client) => legalActions(latest.get(client)!.game!, seatOf(client)).length > 0);
+      // 等到大家要做决定（开局、亮出这些自动阶段服务器会自己推进）
+      await updateWhere(viewer, (snapshot) => snapshot.game?.phase === "decide");
+      await delay(20);
+      const undecided = (client: TestSocket) => legalActions(latest.get(client)!.game!, seatOf(client)).filter((action) => action.type === "decide");
+      const mover = players.find((client) => undecided(client).length === 2);
       if (!mover) break;
-      const action = legalActions(latest.get(mover)!.game!, seatOf(mover))[0]!;
+      const action = undecided(mover)[step === 0 ? 1 : 0]!;
       const version = latest.get(viewer)!.game!.version;
       expect((await call<LobbyRoomSnapshot>((ack) => mover.emit("game:command", action, ack))).ok).toBe(true);
       await updateWhere(viewer, (snapshot) => snapshot.game!.version !== version);
