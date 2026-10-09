@@ -35,12 +35,6 @@ export interface BotOptions {
   readonly noise?: boolean;
   /** 第 4、5 局按估计比分调整 ρ（默认开；hint 时关）。 */
   readonly scoreAdjust?: boolean;
-  /**
-   * 估计别人这一张离不离开（默认开）：按同一套账、胆量取 [0.7, 2.1] 均匀分布估出每个人离开的机会，
-   * 用来算「现在走能分到多少余数、能不能单独拿神器」和「我留下时别人会不会把余数和神器拿走」。
-   * 关掉就是补充 1.3 的原始公式（余数按 2 人分、单独离开按 0.5^(n−1)）。
-   */
-  readonly opponentModel?: boolean;
 }
 
 /** 这一步的账（理由里的数字都从这里来；界面可以拿来显示）。 */
@@ -223,8 +217,8 @@ function reasonFor(choice: Choice, a: BotAnalysis): string {
   }
   if (a.pathArtifacts > 0 && a.inTemple <= 2) {
     const pieces = a.pathArtifacts > 1 ? `${a.pathArtifacts} 件神器（共 ${a.artifactPoints} 分）` : `${a.artifactPoints} 分的神器`;
-    if (a.inTemple === 1) return `只剩你一个人，现在离开能带走路上的${pieces}，连同 ${a.carried + a.pathGems} 颗宝石。`;
-    return `只剩你和另一个人，现在单独走能拿走${pieces}（两人一起走就谁都拿不到）。`;
+    if (a.inTemple === 1) return `只剩你一个人，现在离开能带走路上的 ${pieces}，连同 ${a.carried + a.pathGems} 颗宝石。`;
+    return `只剩你和另一个人，现在单独走能拿走 ${pieces}（两人一起走就谁都拿不到）。`;
   }
   const extra = a.pathGems > 0 ? `，还能分路上的 ${a.pathGems} 颗余数` : "";
   const danger = hazards >= 2 ? `已经出了 ${hazards} 种危险，下一张有 ${bust} 的机会全丢` : `下一张有 ${bust} 的机会全丢`;
@@ -260,43 +254,11 @@ export function botAdvice(input: GameState, playerId: string, options: BotOption
     for (const gems of info.treasures) treasure += Math.floor(gems / m);
     return treasure / R + (info.artifacts / R) * nextArtifact * roughSolo(m);
   };
-  // 补充 1.3 的原始公式：现在离开 = 携带 + 余数（只剩自己全拿，否则按 2 人分）+ 神器 × 单独离开的机会。
-  const simpleLeave = c + (n === 1 ? p : p / 2) + artifactPoints * roughSolo(n);
-  const simpleGain = gainFor(n);
-
-  let gain = simpleGain;
-  let leaveValue = simpleLeave;
-  let reward = (1 - bust) * simpleGain;
-  let risk = bust * simpleLeave;
-  if (options.opponentModel === true && n > 1 && bust > 0 && simpleLeave > 0) {
-    // 别人（还有 n−1 人）各自离开的机会 q：用同一套账、胆量 ρ' ~ U[0.7, 2.1] 估计。
-    const critical = (1 - bust) * simpleGain > 0 ? (bust * simpleLeave) / ((1 - bust) * simpleGain) : Infinity;
-    const q = 0.05 + 0.9 * Math.min(1, Math.max(0, (critical - 0.7) / 1.4));
-    const others = n - 1;
-    // K 个别人同时离开的概率（二项分布）。
-    const chance: number[] = [];
-    let binom = 1;
-    for (let k = 0; k <= others; k += 1) {
-      if (k > 0) binom = (binom * (others - k + 1)) / k;
-      chance.push(binom * q ** k * (1 - q) ** (others - k));
-    }
-    // 现在离开：和 K 个别人一起平分余数；没人一起走才拿得到神器。
-    leaveValue = c;
-    // 留下：别人走了会带走余数（K=1 时还带走神器），然后再翻一张；下一张之后还留着的东西按粗估算。
-    let keep = c;
-    gain = 0;
-    for (let k = 0; k <= others; k += 1) {
-      const w = chance[k]!;
-      leaveValue += w * (Math.floor(p / (k + 1)) + (k === 0 ? artifactPoints : 0));
-      const left = n - k;
-      const pathAfter = k === 0 ? p : p % k;
-      const artifactsAfter = k === 1 ? 0 : artifactPoints;
-      keep += w * ((left === 1 ? pathAfter : pathAfter / 2) + artifactsAfter * roughSolo(left));
-      gain += w * gainFor(left);
-    }
-    reward = (1 - bust) * gain;
-    risk = Math.max(0, leaveValue - (1 - bust) * keep);
-  }
+  // 补充 1.3 的公式：现在离开 = 携带 + 余数（只剩自己全拿，否则按 2 人分）+ 神器 × 单独离开的机会。
+  const leaveValue = c + (n === 1 ? p : p / 2) + artifactPoints * roughSolo(n);
+  const gain = gainFor(n);
+  const reward = (1 - bust) * gain;
+  const risk = bust * leaveValue;
 
   let rho: number;
   let behind = 0;

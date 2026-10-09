@@ -248,7 +248,6 @@ if (isMain) {
   if (group === "all" || group === "self") selfPlay(games);
   if (group === "all" || group === "vs") versus(games);
   if (group === "variants") variants(games);
-  if (group === "opp") compare(games, {}, { opponentModel: false }, "A=估计别人 / B=原始公式");
   if (group === "score") compare(games, {}, { scoreAdjust: false }, "A=按比分调 / B=不调");
   console.log(`\n用时 ${((performance.now() - t0) / 1000).toFixed(1)} 秒`);
 }
