@@ -1,12 +1,12 @@
 import type { DayPalette } from "./day-theme";
 
 /**
- * 白天版调色表（多米诺王国，和沙丘赛驼、花砖物语、车票之旅同一套暖棕色）。
+ * 白天版调色表（印加宝藏，先沿用全站暖棕色；界面阶段按丛林神庙的配色补全）。
  * 深色底、面板、按钮 → 白底浅色；深色像素描边保留；浅色字 → 深色字。
  * 地形格、国王、按钮里的金色红色这些内容色不换；牌桌上的面板跟着变成浅色（场景换成白天那张）。
  */
 export const palette: DayPalette = {
-  files: ["app-pixel.css", "kd.css"],
+  files: ["app-pixel.css", "incan.css"],
   colors: {
     "#120e0b": "#ffffff", // 底色、输入框
     "#18120e": "#faf8f4", // 底色的棋盘纹
@@ -41,6 +41,6 @@ export const palette: DayPalette = {
     "--ok": "#1f8a45",
     "--bad": "#d1303f",
   },
-  // 骨牌上的「已放 / 弃掉」小牌保持深底浅字
-  keep: [".kd-slot-state", ".kd-discard-badge"],
+  // 界面阶段把牌桌上要保持深底浅字的类名加进来
+  keep: [],
 };

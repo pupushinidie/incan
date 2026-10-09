@@ -8,10 +8,10 @@ export function roomRole(room: LobbyRoomSnapshot) {
   return { member, spectating: !member, isHost: member?.isHost ?? false };
 }
 
-/** 这款游戏有没有藏起来的信息（手牌等）；没有的话不显示「观战看手牌」。 */
-const HIDDEN_INFO = false;
+/** 这款游戏有没有藏起来的信息：印加宝藏是每个人帐篷里的宝石。 */
+const HIDDEN_INFO = true;
 /** 藏起来的是什么（显示在开关上）。 */
-const SECRET = "手牌";
+const SECRET = "帐篷";
 
 const ALL_OPTIONS: { key: keyof RoomAccess; label: string; hint: string }[] = [
   { key: "allowSpectators", label: "允许观战", hint: "有房间码、或者从首页列表都能进来看" },

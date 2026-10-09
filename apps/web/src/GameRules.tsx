@@ -12,51 +12,50 @@ function GameRules({ className = "quiet-button" }: { className?: string }) {
 
   return (
     <>
-      <button className={`${className} kd-rules-button`} type="button" aria-expanded={open} onClick={() => setOpen(true)}>规则</button>
+      <button className={`${className} ig-rules-button`} type="button" aria-expanded={open} onClick={() => setOpen(true)}>规则</button>
       {open && (
         <div className="gm-modal-backdrop" role="presentation" onClick={() => setOpen(false)}>
-          <section className="gm-panel kd-rules" role="dialog" aria-modal="true" aria-labelledby="kd-rules-title" onClick={(event) => event.stopPropagation()}>
-            <h2 id="kd-rules-title">多米诺王国怎么玩</h2>
+          <section className="gm-panel ig-rules" role="dialog" aria-modal="true" aria-labelledby="ig-rules-title" onClick={(event) => event.stopPropagation()}>
+            <h2 id="ig-rules-title">印加宝藏怎么玩</h2>
             <div className="game-rules-block">
               <h3>目标</h3>
               <p>
-                每人从一座城堡起步，把挑来的骨牌（一张占两格）拼进自己的王国，最后拼成 <b>5×5</b> 的方块（2 人「强力对决」是 7×7）。
-                每一片连在一起的同种地形，得分 = <b>格数 × 这片里的皇冠数</b>，没有皇冠的地方不得分。总分最高的人获胜。
+                打 <b>5 局</b>。每局大家一起钻进神庙翻牌分宝石，带回营地的宝石存进自己的帐篷，以后再也不会丢。
+                最后帐篷里的宝石（1 颗 1 分）加上神器分，总分最高的人赢。
               </p>
             </div>
             <div className="game-rules-block">
-              <h3>一轮怎么走</h3>
-              <ol>
-                <li>场上有两排骨牌：<b>本轮</b>这一排上站着国王，<b>下一轮</b>这一排等着被挑。每排按编号从小到大摆。</li>
-                <li>本轮这一排里，<b>编号最小</b>那张上的国王先行动：先把脚下的骨牌<b>放进自己的王国</b>，再到下一轮那一排<b>挑一张</b>还没人挑的骨牌。</li>
-                <li>编号越大的骨牌通常越值钱（皇冠多），但挑了它，下一轮你就排得越靠后。</li>
-                <li>开局先翻一排让大家挑，不放。2 人局每人有 2 个国王，顺序是 A 挑 1 张 → B 挑 2 张 → A 拿剩下那张；3–4 人局顺序随机。</li>
-                <li>3 人局每排没人挑的那一张直接弃掉。牌堆用完后的最后一轮只放不挑。</li>
-              </ol>
+              <h3>翻牌</h3>
+              <ul>
+                <li><b>宝物</b>：还在神庙里的人平分，除不尽的余数留在路上。例：4 个人翻出 11 → 每人 2 颗，路上留 3 颗。</li>
+                <li><b>危险</b>（火焰、木乃伊、落石、蛇、蜘蛛）：这一局第一次出现没事；<b>同一种第二次出现就塌方</b>，还在里面的人这一局带着的宝石全丢。塌方的那张危险永久拿走，之后几局这种危险更少。</li>
+                <li><b>神器</b>：先放在路上。没翻出来的神器会留到下一局，所以一条路上可能有好几件。</li>
+                <li>每局第一张翻牌前、以及第一张就是危险时，不用做决定，直接往下翻。</li>
+              </ul>
             </div>
             <div className="game-rules-block">
-              <h3>怎么放</h3>
+              <h3>继续还是离开</h3>
               <ul>
-                <li>两格都要放在空格上，可以随意转方向。</li>
-                <li>至少有一格要上下或左右挨着<b>城堡</b>（城堡和什么地形都能接）或者<b>同一种地形</b>，斜着挨不算。另一格挨着什么都行。</li>
-                <li>整个王国（连城堡）不能超出 5×5。城堡不一定在正中间。</li>
-                <li>只要有地方能放就必须放；哪里都放不下，这张就弃掉，王国里会留空。</li>
-                <li><b>提前放</b>：还没轮到你时就可以先把这张骨牌放好（可以改），轮到你时自动生效，直接去挑下一张。别人看不到你放在哪。</li>
+                <li>每翻一张，神庙里的人<b>同时</b>选「继续挖」或「离开」。大家都选好了一起亮出；最后一个人选之前都能改。</li>
+                <li>离开的人平分路上的余数（还除不尽的留在路上），连同这一局的宝石一起存进帐篷，这一局不能再回来。</li>
+                <li><b>只有一个人离开</b>时，他把路上所有神器都带走；两个人以上一起走，谁也拿不到。</li>
+                <li>所有人都离开或者塌方，这一局结束。路上没人分的宝石和没人拿的神器作废。</li>
               </ul>
             </div>
             <div className="game-rules-block">
               <h3>计分和平局</h3>
               <ul>
-                <li>每片区域单独算，城堡不属于任何区域，也不把两边连起来。</li>
-                <li>开房可选：<b>中央王国</b>（城堡在王国正中心 +10；没拼满也算，只要所有格子都在城堡上下左右 2 格以内）、<b>和谐</b>（拼满而且整局没弃过骨牌 +5）。</li>
-                <li>同分时比<b>最大的一片区域</b>有几格（有没有皇冠都算），再比<b>皇冠总数</b>，还一样就并列获胜。</li>
+                <li>神器按整局带出神庙的先后算分：第 1、2、3 件各 5 分，第 4、5 件各 10 分（作废的不算件数）。</li>
+                <li>帐篷里的宝石只有自己看得到，别人带出了几件神器、这一局手上有多少宝石是公开的。</li>
+                <li>同分比神器件数，再一样就并列获胜。</li>
+                <li>开房选项「无神器」：整局不放神器，只比宝石。</li>
               </ul>
             </div>
             <div className="game-rules-block">
               <h3>时间和托管</h3>
               <p>
-                挑牌 45 秒、放骨牌 90 秒。超时自动替你走：挑编号最小的空位，放在放下后分数最高的位置。
-                连续超时 2 次转托管（人机替你下），掉线时也由人机代下，回来就交还给你。
+                每张牌有 30 秒做决定，超时按「离开」处理（落袋为安）。连续超时 2 次转托管（人机替你选），
+                掉线时也由人机代选，回来就交还给你。
               </p>
             </div>
             <div className="gm-panel-actions">

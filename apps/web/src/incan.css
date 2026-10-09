@@ -1,0 +1,57 @@
+/*
+ * 印加宝藏的样式，叠在 app-pixel.css 的像素皮肤之上（白天版由 day-theme.ts 生成）。
+ * 引擎阶段只放首页、等候房间的基本排版和调试牌桌；正式牌桌由界面阶段重做。
+ */
+
+/* ---------- 首页 ---------- */
+.ig-home-points { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.ig-home-points b { display: inline-block; min-width: 40px; margin-right: 8px; color: var(--gold); font-size: 24px; font-weight: 400; vertical-align: middle; }
+.app-shell.ig-home { width: min(1200px, calc(100% - 48px)); }
+.ig-home .welcome-grid { grid-template-columns: minmax(0, 1fr) 420px; align-items: center; gap: 48px; padding: 24px 0; }
+.ig-home .welcome-copy { padding: 0; }
+.ig-home-side { display: flex; min-width: 0; min-height: 0; flex-direction: column; gap: 16px; }
+.app-shell.ig-home .online-rooms { margin: 0; padding: 0; border-top: 0; }
+@media (max-width: 850px) {
+  .ig-home .welcome-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+
+/* ---------- 等候房间 ---------- */
+.ig-options { display: grid; gap: 8px; margin-top: 16px; }
+.ig-member-avatar { display: grid; place-items: center; color: #120e0b; font-size: 12px; }
+.ig-room-chat { min-height: 0; }
+
+/* ---------- 规则弹窗 ---------- */
+.app-shell .gm-panel.ig-rules { width: min(760px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; text-align: left; }
+.ig-rules .game-rules-block + .game-rules-block { margin-top: 12px; }
+.app-shell .ig-rules .game-rules-block h3 { margin: 0 0 4px; color: var(--gold); font-size: 12px; font-weight: 400; }
+.app-shell .ig-rules .game-rules-block :is(p, li) { margin: 0; color: var(--text); font-size: 12px; line-height: 1.7; }
+.app-shell .ig-rules .game-rules-block :is(ul, ol) { margin: 0; padding-left: 20px; }
+.app-shell .ig-rules .game-rules-block b { color: var(--gold); font-weight: 400; }
+.ig-rules .gm-panel-actions { margin-top: 16px; }
+
+/* ---------- 调试牌桌 ---------- */
+.app-shell.ig-game { width: 100%; max-width: none; margin: 0; padding: 0 12px 24px; box-sizing: border-box; }
+.ig-debug { display: flex; flex-direction: column; gap: 8px; color: var(--text); font-size: 12px; }
+.ig-debug-top { flex-wrap: wrap; gap: 12px; }
+.ig-debug-status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 24px; }
+.ig-debug-status b { color: var(--gold); font-weight: 400; }
+.ig-debug-timer { color: var(--bad); }
+.ig-debug-note { color: var(--muted); }
+.ig-debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
+.ig-debug-panel { min-width: 0; padding: 12px; background: var(--panel); }
+.ig-debug-panel h3 { margin: 0 0 8px; color: var(--gold); font-size: 12px; font-weight: 400; }
+.ig-debug-panel p { margin: 6px 0; line-height: 1.7; }
+.ig-debug-wide { grid-column: 1 / -1; }
+.ig-debug-path { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.ig-card { padding: 6px 10px; font-size: 24px; line-height: 1; background: #2e2319; }
+.ig-card-treasure { color: #f0c43c; }
+.ig-card-hazard { color: #ff7a6a; }
+.ig-card-artifact { color: #6ad8d0; }
+.ig-card.taken { opacity: 0.5; }
+.ig-debug-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.ig-debug-actions .primary-button, .ig-debug-actions .quiet-button { min-height: 48px; font-size: 24px; }
+.ig-debug-events { margin: 0; padding-left: 18px; line-height: 1.7; }
+.ig-debug-table { width: 100%; border-collapse: collapse; }
+.ig-debug-table th, .ig-debug-table td { padding: 6px 8px; border-bottom: 1px solid #3d2e22; text-align: left; }
+.ig-debug-table tr.me td { color: var(--gold); }
+.ig-debug-raw pre { max-height: 360px; overflow: auto; padding: 8px; background: var(--panel); font-size: 12px; }

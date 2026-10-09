@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
-import { CAPACITY_OPTIONS, type Capacity, type GameCommand, type GameOptions, type LobbyRoomSnapshot, type PublicRoomSummary } from "@incan/game";
-import { art, PLAYER_HEX } from "./art.js";
-import { DominoView } from "./Kingdom.js";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { CAPACITY_OPTIONS, MIN_PLAYERS, type Capacity, type GameCommand, type GameOptions, type LobbyRoomSnapshot, type PublicRoomSummary } from "@incan/game";
 import { useConfirm } from "./confirm.js";
 import GameBoard from "./GameBoard.js";
 import GameRules from "./GameRules.js";
@@ -26,7 +24,7 @@ function normalizeRoomCode(value: string): string {
 function App() {
   const [mode, setMode] = useState<EntryMode>("create");
   const [name, setName] = useState("");
-  const [capacity, setCapacity] = useState<Capacity>(2);
+  const [capacity, setCapacity] = useState<Capacity>(4);
   const [confirmAction, confirmDialog] = useConfirm();
   // 白天 / 夜间画面：首页、等候房间、牌桌共用，顶栏按钮随时切换；和游戏中心、其他游戏共用同一个选择。
   const [theme, toggleTheme] = useTheme();
@@ -218,7 +216,7 @@ function App() {
     const players = room.game.players;
     const watched = players.some((player) => player.id === watchId) ? watchId : players[0]!.id;
     return (
-      <main className="app-shell kd-game">
+      <main className="app-shell ig-game">
         <GameBoard
           room={room}
           busy={busy}
@@ -244,7 +242,7 @@ function App() {
 
   if (room) {
     return (
-      <main className="app-shell kd-room">
+      <main className="app-shell ig-room">
         <header className="topbar">
           <Brand />
           <div className="topbar-right">
@@ -272,7 +270,7 @@ function App() {
   }
 
   return (
-    <main className="app-shell kd-home">
+    <main className="app-shell ig-home">
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
@@ -285,26 +283,25 @@ function App() {
 
       <section className="welcome-grid">
         <div className="welcome-copy">
-          <div className="eyebrow"><span className="eyebrow-line" /> 在线对战 · 2—4 人 · 空座可以加人机</div>
-          <h1>多米诺王国</h1>
+          <div className="eyebrow"><span className="eyebrow-line" /> 在线对战 · 3—8 人 · 空座可以加人机</div>
+          <h1>印加宝藏</h1>
           <p className="welcome-description">
-            每人从一座城堡起步，轮流挑骨牌、拼进自己的王国：麦田、森林、湖泊、草地、沼泽、矿山。
-            同一种地形连成一片，格数 × 皇冠数就是这片的分。挑大号骨牌皇冠多，可下一轮就得排在后面。
+            大家一起钻进神庙，一张张翻牌分宝石。每翻一张，所有人同时决定：继续往里挖，还是带着宝石回营地？
+            同一种危险出现第二次就塌方，还在里面的人这一局白干。打 5 局，帐篷里的宝石加神器分最高的人赢。
           </p>
-          <ul className="kd-home-points">
-            <li><b>挑</b>编号越小，下一轮越早行动</li>
-            <li><b>拼</b>一格挨着城堡或同种地形就能放</li>
-            <li><b>算</b>每片地：格数 × 皇冠，拼满 5×5 收官</li>
+          <ul className="ig-home-points">
+            <li><b>分</b>宝物在神庙里的人之间平分，余数留在路上</li>
+            <li><b>走</b>离开的人平分路上的余数，单独走还能拿神器</li>
+            <li><b>爆</b>同一种危险第二次出现，里面的人全丢</li>
           </ul>
-          <Hero />
         </div>
 
-        <div className="kd-home-side">
+        <div className="ig-home-side">
           <section className="entry-card" aria-labelledby="entry-title">
             <div className="entry-card-heading">
               <div>
                 <span className="section-kicker">准备开始</span>
-                <h2 id="entry-title">进入王国</h2>
+                <h2 id="entry-title">进入神庙</h2>
               </div>
               <span className="step-indicator">01 <i /> 02</span>
             </div>
@@ -361,7 +358,7 @@ function App() {
                       </button>
                     ))}
                   </div>
-                  <p className="field-hint">至少 2 位玩家后房主就能开始，空座位可以加人机。中央王国、和谐、强力对决进房间后房主可以开。</p>
+                  <p className="field-hint">凑够 {MIN_PLAYERS} 位玩家房主就能开始，空座位可以加人机。「无神器」进房间后房主可以开。</p>
                 </>
               ) : (
                 <>
@@ -397,25 +394,11 @@ function App() {
   );
 }
 
-/** 首页主图：王国场景 + 摆在上面的几张骨牌。 */
-function Hero() {
-  const [theme] = useTheme();
-  return (
-    <div className="kd-hero" style={{ backgroundImage: `url(${theme === "day" ? art.sceneDay : art.sceneNight})` }}>
-      <div className="kd-showcase" aria-hidden="true">
-        {[48, 46, 33, 21].map((n, index) => (
-          <span key={n} style={{ "--i": index } as CSSProperties}><DominoView n={n} cell={32} px={32} /></span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function Brand() {
   return (
-    <a className="brand" href={import.meta.env.BASE_URL} aria-label="多米诺王国首页">
+    <a className="brand" href={import.meta.env.BASE_URL} aria-label="印加宝藏首页">
       <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
-      <span className="brand-name">多米诺王国<span> KINGDOMINO</span></span>
+      <span className="brand-name">印加宝藏<span> INCAN GOLD</span></span>
     </a>
   );
 }
@@ -461,7 +444,7 @@ function RoomView({
     <section className="room-layout">
       <div className="room-heading">
         <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> {room.status === "waiting" ? "等待大厅" : "对局已创建"} · 多米诺王国</div>
+          <div className="eyebrow"><span className="eyebrow-line" /> {room.status === "waiting" ? "等待大厅" : "对局已创建"} · 印加宝藏</div>
           <h1>{spectating ? "你在观战。" : room.status === "waiting" ? "牌桌准备中。" : "好戏即将开始。"}</h1>
           <p>{spectating ? "等房主开始对局；有空座位时可以坐下一起玩。" : "把房间码分享给朋友，等大家就位后开始；空座位可以加人机。"}</p>
         </div>
@@ -498,8 +481,8 @@ function RoomView({
             <div className="player-list">
               {room.members.map((member, index) => (
                 <div className="player-row" key={member.id}>
-                  <div className="player-avatar kd-member-avatar" style={{ background: PLAYER_HEX[SEAT_COLORS[index % 4]!] }}>
-                    <img src={art.king(SEAT_COLORS[index % 4]!)} alt="" />
+                  <div className="player-avatar ig-member-avatar" style={{ background: SEAT_HEX[index % SEAT_HEX.length]! }}>
+                    <span>{index + 1}</span>
                   </div>
                   <div className="player-details">
                     <strong>{member.name}{member.id === socket.id ? <small>你</small> : null}</strong>
@@ -520,21 +503,21 @@ function RoomView({
                 </div>
               ))}
             </div>
-            <p className="field-hint">挑骨牌 45 秒、放骨牌 90 秒，超时自动替你走（挑编号最小的空位，放在放下后分数最高的地方）；连续超时 2 次转托管，掉线时由人机代下，回来能接上。</p>
+            <p className="field-hint">每翻一张牌有 30 秒决定继续还是离开，超时按「离开」处理；连续超时 2 次转托管，掉线时由人机代下，回来能接上。</p>
             <RoomSettingsPanel room={room} />
             <SeatSwitch room={room} />
             <div className="room-actions">
               {isHost ? (
-                <button className="primary-button" type="button" onClick={onStart} disabled={busy || room.members.length < 2}>
+                <button className="primary-button" type="button" onClick={onStart} disabled={busy || room.members.length < MIN_PLAYERS}>
                   {busy ? <><span className="spinner" /> 正在开始</> : "开始对局"}<span aria-hidden="true">↗</span>
                 </button>
               ) : (
                 <div className="host-wait-note"><span className="pulse-dot" /> {spectating ? "等房主开始，开始后在这里观战" : "等待房主开始对局"}</div>
               )}
-              {isHost && room.members.length < 2 && <p className="field-hint centered">还需要至少 {2 - room.members.length} 位玩家加入，也可以点空座位上的「加人机」。</p>}
+              {isHost && room.members.length < MIN_PLAYERS && <p className="field-hint centered">还需要至少 {MIN_PLAYERS - room.members.length} 位玩家加入，也可以点空座位上的「加人机」。</p>}
             </div>
           </section>
-          <div className="kd-room-chat">{chat}</div>
+          <div className="ig-room-chat">{chat}</div>
         </div>
       ) : null}
 
@@ -545,7 +528,8 @@ function RoomView({
   );
 }
 
-const SEAT_COLORS = ["pink", "yellow", "green", "blue"] as const;
+/** 等候房间里座位小方块的颜色（界面阶段换成正式的队伍颜色）。 */
+const SEAT_HEX = ["#e0a030", "#4d8fe0", "#d1503f", "#5cbf5a", "#b06ad8", "#e46aa4", "#40b8b0", "#c8c0a8"];
 
 type Ack = { ok: true; data: void } | { ok: false; error: string };
 
@@ -555,13 +539,11 @@ function OptionsPanel({ room }: { room: LobbyRoomSnapshot }) {
   const [error, setError] = useState("");
   const change = (patch: Partial<GameOptions>) => socket.emit("room:settings", patch, (response: Ack) => setError(response.ok ? "" : response.error));
   const items: { key: keyof GameOptions; title: string; note: string; disabled?: boolean }[] = [
-    { key: "middleKingdom", title: "中央王国", note: "终局时城堡在王国正中心 +10" },
-    { key: "harmony", title: "和谐", note: "拼满而且整局没弃过骨牌 +5" },
-    { key: "mighty", title: "强力对决", note: room.capacity === 2 ? "2 人局 48 张全用，拼 7×7" : "只有 2 人房间能开", disabled: room.capacity !== 2 },
+    { key: "noArtifacts", title: "无神器", note: "法/德原版玩法：整局不放神器，只比宝石" },
   ];
   return (
-    <div className="kd-options">
-      <div className="panel-label">开房变体 <span>{isHost ? "房主可以改" : "只有房主能改"}</span></div>
+    <div className="ig-options">
+      <div className="panel-label">开房选项 <span>{isHost ? "房主可以改" : "只有房主能改"}</span></div>
       {items.map((item) => (
         <button
           key={item.key}
