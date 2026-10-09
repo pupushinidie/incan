@@ -40,6 +40,8 @@ const FULL_TEST_CAPACITY: Capacity = 3;
 process.env.BOT_DELAY_SCALE = "0";
 process.env.TURN_MS = "300";
 process.env.PAUSE_SCALE = "0";
+// 对局中所有真人都掉线后多久关房（测试调短）。
+process.env.ROOM_ABANDON_MS = "1500";
 
 
 type TestSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -198,6 +200,23 @@ describe("人机", () => {
     expect((await call<void>((ack) => host.emit("room:leave", ack))).ok).toBe(true);
     expect((await lobby(host)).some((candidate) => candidate.players.some((player) => player.name === hostName))).toBe(false);
   });
+
+  it("对局中唯一的真人掉线：人机接着打，所有真人离线满一段时间后房间关闭", async () => {
+    const host = await connect();
+    const hostName = nick("掉线房主");
+    await create(host, hostName, MIN_CAPACITY);
+    await addBotsUpTo(host, 1);
+    expect((await start(host)).ok).toBe(true);
+    const watcher = await connect();
+    const before = (await lobby(watcher)).find((candidate) => candidate.players[0]?.name === hostName);
+    expect(before).toBeDefined();
+    host.disconnect();
+    const deadline = Date.now() + 10_000;
+    while (Date.now() < deadline && (await lobby(watcher)).some((candidate) => candidate.players[0]?.name === hostName)) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    expect((await lobby(watcher)).some((candidate) => candidate.players[0]?.name === hostName)).toBe(false);
+  }, 20_000);
 
   it("连续超时两次转托管，由人机代打；取消托管后交还", async () => {
     const idle = await connect();
