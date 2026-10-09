@@ -71,11 +71,25 @@
 ```bash
 npm install
 npm run dev          # 服务器 3019 + 网页 5192（改端口：SERVER_PORT=3119 WEB_PORT=5292 npm run dev）
-npm test             # 全部测试
-npm run test:game    # 只跑规则包
-npm run typecheck
+npm test             # 全部测试（153 个：规则包 62、规则核对 73、服务器 18）
+npm run test:game    # 只跑规则包（含规则核对）
+npm run typecheck    # 也检查 packages/game/test 下的测试代码
 BASE_PATH=/incan/ npm run build
+node scripts/spy.mjs # 抓包：连上正在跑的服务器（3019），两个间谍 + 观战打一整局，查帐篷 / 选择 / 牌堆 / 种子有没有漏
 ```
+
+测试都有什么：
+
+| 文件 | 内容 |
+|---|---|
+| `packages/game/test/rules.test.ts` | 规则书 TC1–TC12、补充 S1–S9、勘误 E5/E8/E10、改选撤回、超时、人数 |
+| `packages/game/test/engine.test.ts` | 不改输入、可复现、计时 key、时限、合法行动、公开推算牌堆、预览局面工厂（每个局面能接着打到终局） |
+| `packages/game/test/redact.test.ts` | 每个视角、观战、观战看帐篷、终局、所有预览局面 × 所有视角 |
+| `packages/game/test/random.test.ts` | 3–8 人各 300 局标准 + 100 局无神器，随机继续 / 离开 / 改选 / 撤回 / 整轮超时，查配件守恒、宝石守恒、携带相等、阶段、视角 |
+| `packages/game/test/acceptance/` | 规则核对 agent 背靠背写的（引擎不改） |
+| `apps/server/test/game.test.ts` | 建房 → 加入 → 开局 → 每种行动 → 超时 → 局末 → 终局 → 再来一局；倒计时不被别人重置；连续超时转托管；重连回座；无神器选项 |
+| `apps/server/test/hidden.test.ts` | 进程内抓包：三个玩家 + 观战 + 首页连接的每一条推送和原始帧 |
+| `apps/server/test/bots.test.ts` `spectate.test.ts` `kickSession.test.ts` `admin.test.ts` | 继承的人机托管、观战、挤登录、管理员解散 |
 
 网页现在是**调试牌桌**（引擎阶段放的，正式界面由界面阶段做）：显示整个状态，每个合法行动一个按钮。
 
