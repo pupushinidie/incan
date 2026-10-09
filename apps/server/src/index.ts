@@ -517,10 +517,22 @@ function runBot(room: RoomState, playerId: string, key: string): void {
     room.game = applyCommand(game, playerId, command);
   } catch (error) {
     console.error("人机决定失败，按超时默认（离开）处理", error);
-    room.game = applyCommand(game, playerId, autoCommand(game, playerId));
+    if (!guard(room, () => applyCommand(game, playerId, autoCommand(game, playerId)))) return;
   }
   afterGameChange(room);
   emitRoomUpdate(room);
+}
+
+/** 计时器里推进对局：万一规则包抛错（按规则不会发生），只关掉这个房间，不让整个服务器崩掉。返回是否成功。 */
+function guard(room: RoomState, step: () => GameState): boolean {
+  try {
+    room.game = step();
+    return true;
+  } catch (error) {
+    console.error("对局推进出错，关闭房间", room.code, error);
+    dissolveRoom(room, "对局出了点问题，房间已关闭。");
+    return false;
+  }
 }
 
 /**
@@ -533,7 +545,7 @@ function expireTurn(room: RoomState, key: string): void {
   if (rooms.get(room.code) !== room || !game || game.phase === "gameOver" || timerKey(game) !== key) return;
   if (room.turn?.key === key) delete room.turn;
   if (isAutoPhase(game)) {
-    room.game = advanceGame(game);
+    if (!guard(room, () => advanceGame(game))) return;
   } else {
     for (const playerId of pendingDeciders(game)) {
       if (robotSeat(room, playerId)) continue;
@@ -541,7 +553,7 @@ function expireTurn(room: RoomState, key: string): void {
       room.timeouts.set(playerId, count);
       if (count >= AUTO_AFTER_TIMEOUTS) setAuto(room, playerId, true);
     }
-    room.game = timeoutTurn(game);
+    if (!guard(room, () => timeoutTurn(game))) return;
   }
   afterGameChange(room);
   emitRoomUpdate(room);
