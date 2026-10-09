@@ -1,0 +1,11 @@
+{"time": "2026-10-09 18:59:16", "name": "scene-night-s31", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.01177595607439677}, "seconds": 3840.0}
+{"time": "2026-10-09 19:00:18", "name": "scene-night-s32", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009919420401255291}, "seconds": 62.4}
+{"time": "2026-10-09 19:01:27", "name": "scene-night-s33", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.010210483206642999}, "seconds": 68.8}
+{"time": "2026-10-09 19:02:28", "name": "scene-day-s31", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009581027852164374}, "seconds": 61.0}
+{"time": "2026-10-09 19:03:33", "name": "scene-day-s32", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.009834352148903741}, "seconds": 65.2}
+{"time": "2026-10-09 19:04:42", "name": "scene-day-s33", "endpoint": "/create-image-pixen", "usage": {"type": "usd", "usd": 0.010048779063754612}, "seconds": 68.8}
+{"time": "2026-10-09 19:05:30", "name": "cover-1-s901", "endpoint": "/create-image-pixflux", "usage": {"type": "usd", "usd": 0.00744156641430325}, "seconds": 47.9}
+{"time": "2026-10-09 19:06:05", "name": "cover-1-s902", "endpoint": "/create-image-pixflux", "usage": {"type": "usd", "usd": 0.006797820170720418}, "seconds": 34.8}
+{"time": "2026-10-09 19:06:56", "name": "cover-2-s903", "endpoint": "/create-image-pixflux", "usage": {"type": "usd", "usd": 0.0080148647096422}, "seconds": 50.8}
+{"time": "2026-10-09 19:07:33", "name": "cover-2-s904", "endpoint": "/create-image-pixflux", "usage": {"type": "usd", "usd": 0.007077730496724447}, "seconds": 37.5}
+{"time": "2026-10-09 19:08:29", "name": "cover-3-s905", "endpoint": "/create-image-pixflux", "usage": {"type": "usd", "usd": 0.008794535054100884}, "seconds": 56.1}
