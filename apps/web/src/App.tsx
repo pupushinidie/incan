@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { CAPACITY_OPTIONS, MIN_PLAYERS, type Capacity, type GameCommand, type GameOptions, type LobbyRoomSnapshot, type PublicRoomSummary } from "@incan/game";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import { CAPACITY_OPTIONS, MIN_PLAYERS, type Capacity, type Card, type GameCommand, type GameOptions, type LobbyRoomSnapshot, type PublicRoomSummary } from "@incan/game";
+import { art, CARD_H, CARD_W, cardArt, seatColor, SEAT_HEX } from "./art.js";
 import { useConfirm } from "./confirm.js";
 import GameBoard from "./GameBoard.js";
 import GameRules from "./GameRules.js";
@@ -294,6 +295,7 @@ function App() {
             <li><b>走</b>离开的人平分路上的余数，单独走还能拿神器</li>
             <li><b>爆</b>同一种危险第二次出现，里面的人全丢</li>
           </ul>
+          <Hero />
         </div>
 
         <div className="ig-home-side">
@@ -394,7 +396,7 @@ function App() {
   );
 }
 
-function Brand() {
+export function Brand() {
   return (
     <a className="brand" href={import.meta.env.BASE_URL} aria-label="印加宝藏首页">
       <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
@@ -403,7 +405,7 @@ function Brand() {
   );
 }
 
-function ConnectionStatus({ connected }: { connected: boolean }) {
+export function ConnectionStatus({ connected }: { connected: boolean }) {
   return (
     <div className={connected ? "connection-status online" : "connection-status"}>
       <span className="connection-dot" />
@@ -412,7 +414,7 @@ function ConnectionStatus({ connected }: { connected: boolean }) {
   );
 }
 
-function RoomView({
+export function RoomView({
   room,
   busy,
   error,
@@ -471,6 +473,7 @@ function RoomView({
               <div className="room-code-caption">从首页列表进来观战，看不到房间码</div>
             )}
             <OptionsPanel room={room} />
+            <DeckPreview />
           </section>
 
           <section className="room-panel player-panel">
@@ -478,11 +481,11 @@ function RoomView({
               <div className="panel-label">玩家 <span>{room.members.length} / {room.capacity}</span></div>
               <span className="waiting-pill"><i /> 等待中</span>
             </div>
-            <div className="player-list">
+            <div className={room.capacity > 4 ? "player-list many" : "player-list"}>
               {room.members.map((member, index) => (
                 <div className="player-row" key={member.id}>
-                  <div className="player-avatar ig-member-avatar" style={{ background: SEAT_HEX[index % SEAT_HEX.length]! }}>
-                    <span>{index + 1}</span>
+                  <div className="player-avatar ig-member-avatar" style={{ background: SEAT_HEX[seatColor(index)], "--rim": "#f6e8b8" } as CSSProperties}>
+                    <img src={art.explorer(seatColor(index))} alt="" />
                   </div>
                   <div className="player-details">
                     <strong>{member.name}{member.id === socket.id ? <small>你</small> : null}</strong>
@@ -528,10 +531,50 @@ function RoomView({
   );
 }
 
-/** 等候房间里座位小方块的颜色（界面阶段换成正式的队伍颜色）。 */
-const SEAT_HEX = ["#e0a030", "#4d8fe0", "#d1503f", "#5cbf5a", "#b06ad8", "#e46aa4", "#40b8b0", "#c8c0a8"];
 
 type Ack = { ok: true; data: void } | { ok: false; error: string };
+
+/** 首页主图：神庙场景 + 一条路上的几张牌 + 营地的几顶帐篷。 */
+function Hero() {
+  const [theme] = useTheme();
+  const cards: Card[] = [
+    { kind: "treasure", gems: 11 },
+    { kind: "hazard", hazard: "fire" },
+    { kind: "artifact", artifact: 1 },
+    { kind: "treasure", gems: 7 },
+    { kind: "hazard", hazard: "snake" },
+  ];
+  return (
+    <div className="ig-hero" style={{ backgroundImage: `url(${art.scene(theme === "day")})` }}>
+      <div className="ig-hero-camp" aria-hidden="true">
+        {[0, 1, 2, 3].map((seat) => <img key={seat} className="ig-px" src={art.tent(seatColor(seat), seat % 2 === 1)} width={64} height={48} alt="" />)}
+      </div>
+      <div className="ig-hero-cards" aria-hidden="true">
+        {cards.map((card, index) => (
+          <span key={index} style={{ "--i": index } as CSSProperties}><img className="ig-px" src={cardArt(card)} width={CARD_W * 2} height={CARD_H * 2} alt="" /></span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 等候房间里的「牌一览」：三类牌各一张，配一句话。 */
+function DeckPreview() {
+  const items: { card: Card; label: string }[] = [
+    { card: { kind: "treasure", gems: 9 }, label: "宝物 15 张" },
+    { card: { kind: "hazard", hazard: "mummy" }, label: "危险 5×3" },
+    { card: { kind: "artifact", artifact: 3 }, label: "神器 5 件" },
+  ];
+  return (
+    <div className="ig-room-preview" data-tutorial="deck-preview">
+      {items.map((item) => (
+        <figure key={item.label}><img className="ig-px" src={cardArt(item.card)} width={CARD_W} height={CARD_H} alt="" /><figcaption>{item.label}</figcaption></figure>
+      ))}
+      <figure><img className="ig-px" src={art.badge(5)} width={40} height={40} alt="" /><figcaption>第 1–3 件</figcaption></figure>
+      <figure><img className="ig-px" src={art.badge(10)} width={40} height={40} alt="" /><figcaption>第 4–5 件</figcaption></figure>
+    </div>
+  );
+}
 
 /** 开房变体：房主在等候房间里开关，其他人只看。 */
 function OptionsPanel({ room }: { room: LobbyRoomSnapshot }) {

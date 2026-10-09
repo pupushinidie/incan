@@ -1,57 +1,686 @@
 /*
- * 印加宝藏的样式，叠在 app-pixel.css 的像素皮肤之上（白天版由 day-theme.ts 生成）。
- * 引擎阶段只放首页、等候房间的基本排版和调试牌桌；正式牌桌由界面阶段重做。
+ * 印加宝藏的样式，叠在 app-pixel.css 的像素皮肤之上（白天版由 day-theme.ts 按 day-palette.ts 生成，手调的在 theme-day.css）。
+ *
+ * 牌桌一屏放下：顶栏一行；下面左边是牌桌（神庙场景当背景），右边（够宽时）是状态和「记录 / 各局 / 聊天」，不够宽时收进抽屉。
+ * 牌桌从上到下：情况条 → 神庙路径（石板地面）→ 营地（每人一张帐篷卡）→ 操作条。尺寸由 layout.ts 按牌桌实际大小挑，像素图只按整数倍放大。
+ * 字号只用 12 的整数倍；关键信息（按钮、数字、状态、倒计时）≥ 24px。
  */
 
-/* ---------- 首页 ---------- */
-.ig-home-points { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
-.ig-home-points b { display: inline-block; min-width: 40px; margin-right: 8px; color: var(--gold); font-size: 24px; font-weight: 400; vertical-align: middle; }
-.app-shell.ig-home { width: min(1200px, calc(100% - 48px)); }
-.ig-home .welcome-grid { grid-template-columns: minmax(0, 1fr) 420px; align-items: center; gap: 48px; padding: 24px 0; }
-.ig-home .welcome-copy { padding: 0; }
-.ig-home-side { display: flex; min-width: 0; min-height: 0; flex-direction: column; gap: 16px; }
-.app-shell.ig-home .online-rooms { margin: 0; padding: 0; border-top: 0; }
-@media (max-width: 850px) {
-  .ig-home .welcome-grid { grid-template-columns: 1fr; gap: 24px; }
+.ig-px { display: block; flex: 0 0 auto; image-rendering: pixelated; }
+.ig-screen small, .app-shell .gm-panel:is(.ig-final, .ig-rules) small { font-size: 12px; font-weight: 400; }
+
+.ig-panel, .ig-info, .ig-tent, .ig-action, .ig-summary, .ig-choice-btn, .app-shell .ig-hero {
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 var(--edge),
+    0 var(--px) 0 0 var(--edge),
+    calc(var(--px) * -1) 0 0 0 var(--edge),
+    var(--px) 0 0 0 var(--edge),
+    inset var(--px) var(--px) 0 0 var(--rim),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--shade);
 }
 
-/* ---------- 等候房间 ---------- */
+/* ---------- 整屏 ---------- */
+.app-shell.ig-game { width: 100%; max-width: none; min-height: 0; margin: 0; padding: 0; }
+.ig-screen { position: relative; display: flex; height: 100vh; height: 100dvh; flex-direction: column; gap: 8px; padding: 0 12px 8px; box-sizing: border-box; overflow: hidden; }
+.ig-topbar { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; height: 52px; padding: 0 2px; border-bottom: var(--px) solid var(--rim); white-space: nowrap; }
+.ig-topbar .brand { flex: 0 0 auto; }
+.ig-turn { display: flex; flex: 1; align-items: center; justify-content: center; gap: 14px; min-width: 0; overflow: hidden; }
+.ig-turn-text { overflow: hidden; color: var(--text); font-size: 24px; line-height: 1.2; text-overflow: ellipsis; }
+.ig-turn-text.mine { color: var(--gold); }
+.ig-timer { min-width: 64px; padding: 4px 10px; color: var(--gold); background: var(--panel); font-size: 24px; font-weight: 400; line-height: 1; text-align: center; }
+.ig-timer.low { color: var(--bad); animation: ig-blink 0.6s steps(2, jump-none) infinite; }
+@keyframes ig-blink { 50% { opacity: 0.45; } }
+.ig-topbar-right { display: flex; align-items: center; gap: 10px; }
+.ig-topbar-right > * { flex-shrink: 0; }
+.ig-pips { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.ig-pip { position: relative; display: block; padding: 2px; }
+.ig-pip.done .ig-px { filter: brightness(0.45); }
+.ig-pip.bust::after { position: absolute; left: 1px; right: 1px; top: 9px; height: var(--px); background: var(--bad); content: ""; transform: rotate(-35deg); }
+.ig-pip.now { background: rgba(240, 192, 80, 0.18); box-shadow: 0 0 0 var(--px) var(--gold); }
+.ig-round-num { margin-left: 4px; color: var(--gold); font-size: 24px; font-weight: 400; line-height: 1; }
+.ig-round-num i { color: var(--muted); font-size: 12px; font-style: normal; }
+
+.ig-main { position: relative; display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr); gap: 12px; min-height: 0; }
+.ig-screen.with-side .ig-main { grid-template-columns: minmax(0, 1fr) 300px; }
+
+/* ---------- 牌桌：神庙场景 ---------- */
+.ig-table {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  --veil: rgba(6, 12, 14, 0.55);
+  background: linear-gradient(var(--veil), var(--veil)), var(--scene) center / var(--scene-size, cover) no-repeat, #0c1a1c;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 var(--px) var(--edge), inset 0 0 0 calc(var(--px) * 2) #2c4a3e, inset 0 0 0 calc(var(--px) * 4) #060d0e;
+}
+
+/* ---------- 情况条 ---------- */
+.ig-info { --rim: #2c4a3e; display: flex; flex: 0 0 auto; align-items: center; gap: 16px; height: 56px; padding: 0 12px; box-sizing: border-box; background: rgba(10, 18, 20, 0.88); }
+.ig-hazards { display: flex; flex: 0 0 auto; gap: 4px; }
+.ig-hazard { position: relative; display: flex; width: 48px; flex-direction: column; align-items: center; gap: 2px; padding: 2px 0; }
+.ig-hazard small { color: var(--muted); font-size: 12px; line-height: 12px; white-space: nowrap; }
+.ig-hazard .ig-px { filter: grayscale(0.4) brightness(0.8); }
+.ig-hazard.hot { background: rgba(216, 48, 30, 0.28); box-shadow: inset 0 0 0 var(--px) #d8301e; }
+.ig-hazard.hot .ig-px, .ig-hazard.boom .ig-px { filter: none; }
+.ig-hazard.hot small { color: #ffb8a8; }
+.ig-hazard.boom { background: #8a1a14; box-shadow: inset 0 0 0 var(--px) #ffb8a8; }
+.ig-hazard.boom small { color: #fff4ec; }
+.ig-removed { position: absolute; top: -4px; right: -2px; padding: 0 2px; color: #fff4ec; background: #8a1a14; font-size: 12px; font-style: normal; line-height: 12px; }
+.ig-stats { display: flex; flex: 1 1 auto; align-items: center; justify-content: flex-end; gap: 18px; min-width: 0; }
+.ig-stat { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; color: var(--text); }
+.ig-stat > span { display: flex; flex-direction: column; }
+.ig-stat small { color: var(--muted); font-size: 12px; line-height: 12px; white-space: nowrap; }
+.ig-stat b { font-size: 24px; font-weight: 400; line-height: 26px; }
+.ig-stat b i { margin: 0 2px; color: var(--muted); font-style: normal; }
+.ig-next-art { display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+.ig-next-art small { line-height: 14px; }
+.ig-noart { padding: 4px 8px; color: var(--muted); background: rgba(255, 255, 255, 0.06); }
+.ig-bust b { min-width: 3em; }
+.ig-bust.safe b { color: var(--ok); }
+.ig-bust.warn b { color: var(--gold); }
+.ig-bust.danger b { color: var(--bad); }
+
+/* ---------- 神庙路径 ---------- */
+.ig-path {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  --path-veil: rgba(4, 9, 10, 0.35);
+  background: linear-gradient(var(--path-veil), var(--path-veil)), var(--floor) 0 0 / 64px 64px repeat;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 var(--px) var(--edge), inset 0 calc(var(--px) * 2) 0 rgba(0, 0, 0, 0.45);
+}
+.ig-path.ended .ig-card:not(.cracked) .ig-px { filter: brightness(0.6) grayscale(0.3); }
+.ig-path-cards { position: relative; z-index: 1; }
+.ig-torch {
+  position: absolute;
+  z-index: 0;
+  right: 10px;
+  width: 32px;
+  height: 64px;
+  background: var(--fx-torch) 0 0 / 600% 100% no-repeat;
+  image-rendering: pixelated;
+  animation: ig-sprite 0.72s steps(6, jump-none) infinite;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+}
+.ig-path-empty { position: absolute; top: calc(var(--ch) / 2 - 14px); left: 0; margin: 0; color: var(--muted); font-size: 24px; white-space: nowrap; }
+.ig-card { position: absolute; width: var(--cw); height: var(--ch); filter: drop-shadow(calc(var(--px) * 2) calc(var(--px) * 2) 0 rgba(0, 0, 0, 0.55)); }
+.ig-card.fresh { animation: ig-flip 0.45s steps(5, jump-none); transform-origin: 50% 50%; }
+@keyframes ig-flip {
+  0% { transform: translateY(-10px) scaleX(0.1); }
+  50% { transform: translateY(-4px) scaleX(1.08); }
+  100% { transform: none; }
+}
+.ig-card.wobble { animation: ig-wobble 0.25s steps(2, jump-none) 4; }
+@keyframes ig-wobble { 0% { transform: rotate(-4deg); } 100% { transform: rotate(4deg); } }
+.ig-card.taken .ig-px { filter: grayscale(0.85) brightness(0.5); }
+.ig-crack {
+  position: absolute;
+  inset: 0;
+  background: var(--fx-crack) 100% 0 / 500% 100% no-repeat;
+  image-rendering: pixelated;
+  animation: ig-crack 0.35s steps(5, jump-none) both;
+}
+@keyframes ig-crack { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+.ig-art-value { position: absolute; top: calc(var(--px) * -3); right: calc(var(--px) * -3); filter: drop-shadow(1px 1px 0 #050a0b); }
+.ig-card-note { position: absolute; left: 50%; bottom: 4px; padding: 0 4px; color: #f6e8b8; background: rgba(5, 10, 11, 0.88); font-size: 12px; line-height: 16px; white-space: nowrap; transform: translateX(-50%); }
+.ig-card-float {
+  position: absolute;
+  z-index: 50;
+  left: 50%;
+  bottom: 6px;
+  padding: 2px 6px;
+  color: #c8f5d8;
+  background: rgba(5, 10, 11, 0.9);
+  font-size: 24px;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 var(--px) #2fa878;
+  animation: ig-card-float 2.6s steps(13, jump-none) forwards;
+}
+.ig-card-float.at-left { left: 0; transform: none; animation-name: ig-card-float-l; }
+.ig-card-float.at-right { left: auto; right: 0; transform: none; animation-name: ig-card-float-l; }
+@keyframes ig-card-float-l {
+  0% { transform: translateY(8px); }
+  15% { transform: none; }
+  80% { opacity: 1; }
+  100% { transform: translateY(-6px); opacity: 0; }
+}
+@keyframes ig-card-float {
+  0% { transform: translate(-50%, 8px); }
+  15% { transform: translate(-50%, 0); }
+  80% { opacity: 1; }
+  100% { transform: translate(-50%, -6px); opacity: 0; }
+}
+.ig-slot { opacity: 0.9; }
+.ig-party { position: absolute; height: calc(24px * var(--s)); }
+.ig-explorer { position: absolute; bottom: 0; animation: ig-bob 0.8s steps(2, jump-none) infinite; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.6)); }
+@keyframes ig-bob { 50% { transform: translateY(calc(var(--px) * -1)); } }
+.ig-path.collapse { animation: ig-shake 0.35s steps(4, jump-none) 3; }
+@keyframes ig-shake {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-6px, 3px); }
+  66% { transform: translate(5px, -3px); }
+  100% { transform: translate(0, 0); }
+}
+.ig-collapse-fx { position: absolute; z-index: 60; inset: 0; pointer-events: none; }
+.ig-collapse-fx span {
+  position: absolute;
+  width: calc(64px * var(--fs));
+  height: calc(64px * var(--fs));
+  background: var(--fx-collapse) 100% 0 / 1000% 100% no-repeat;
+  image-rendering: pixelated;
+  animation: ig-sprite 0.9s steps(10, jump-none) both;
+}
+@keyframes ig-sprite { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+
+/* ---------- 营地 ---------- */
+.ig-camp { display: grid; flex: 0 0 auto; grid-template-columns: repeat(var(--camp-cols), minmax(0, 1fr)); gap: 8px; }
+.ig-tent {
+  --rim: var(--seat, #456b58);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 8px 6px;
+  color: var(--text);
+  background: rgba(13, 25, 24, 0.9);
+}
+.ig-tent.self { --rim: var(--gold); background: rgba(46, 38, 12, 0.92); }
+.ig-tent.out { background: rgba(13, 25, 24, 0.72); }
+.ig-tent.self.out { background: rgba(46, 38, 12, 0.75); }
+.ig-tent.trapped { --rim: var(--bad); }
+.ig-tent.trapped .ig-tent-img { filter: grayscale(0.7) brightness(0.6); }
+.ig-tent-top { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: calc(24px * var(--ts)); }
+.ig-skull { position: absolute; left: 50%; bottom: 0; transform: translateX(-90%); filter: drop-shadow(1px 1px 0 #050a0b); }
+.ig-choice { display: flex; min-width: 24px; align-items: flex-end; justify-content: center; }
+.ig-choice-card { filter: drop-shadow(1px 1px 0 #050a0b); }
+.ig-choice-card.flip { animation: ig-flip 0.4s steps(4, jump-none); }
+.ig-choice-wait { animation: ig-bob 1s steps(2, jump-none) infinite; }
+.ig-tent-name { display: flex; align-items: center; gap: 4px; min-width: 0; height: 18px; font-size: 12px; }
+.ig-camp.big .ig-tent-name { height: 28px; font-size: 24px; }
+.ig-tent-name strong { min-width: 0; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.ig-tent.self .ig-tent-name strong { color: var(--gold); }
+.ig-tag { flex: 0 0 auto; padding: 0 3px; font-size: 12px; line-height: 16px; }
+.ig-tag.you { color: #2a1c06; background: var(--gold); }
+.ig-tag.bot { color: #d8e8ff; background: #2a62c0; }
+.ig-tag.auto { color: #2a1c06; background: #f0994c; }
+.ig-tag.off { color: #fff4ec; background: #8a1a14; }
+.ig-tent-stats { display: flex; align-items: center; justify-content: space-between; gap: 4px; height: 28px; min-width: 0; }
+.ig-tent-stats > span { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.ig-tent-stats b { font-size: 24px; font-weight: 400; line-height: 1; }
+.ig-tent-stats small { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.ig-carry b { color: #c8f5d8; }
+.ig-camp:not(.big) .ig-carry small { display: none; }
+.ig-lost s { color: var(--bad); font-size: 24px; line-height: 1; }
+.ig-home-note small { color: #e9c279; }
+.ig-arts { flex: 0 0 auto; gap: 2px !important; }
+.ig-spy-tent b { color: var(--gold); }
+.ig-float {
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  top: 0;
+  padding: 0 4px;
+  color: #c8f5d8;
+  font-size: 24px;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0 #050a0b;
+  transform: translateX(-50%);
+  animation: ig-float 1.8s steps(9, jump-none) forwards;
+  pointer-events: none;
+}
+.ig-float.gold { color: var(--gold); }
+.ig-float.home { color: #e9c279; }
+.ig-float.bad { color: var(--bad); }
+@keyframes ig-float {
+  0% { transform: translate(-50%, 16px); }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, -20px); opacity: 0; }
+}
+.ig-tent.claim-glow { animation: ig-claim 0.4s steps(2, jump-none) 6; }
+@keyframes ig-claim {
+  50% { box-shadow: 0 0 0 calc(var(--px) * 2) #fff2b8, 0 0 0 calc(var(--px) * 4) #d09a3a; }
+}
+.ig-tent.home-glow .ig-tent-img { animation: ig-hop 0.3s steps(2, jump-none) 3; }
+@keyframes ig-hop { 50% { transform: translateY(calc(var(--px) * -2)); } }
+
+/* ---------- 操作条 ---------- */
+.ig-action {
+  --rim: #2c4a3e;
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 92px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: rgba(10, 18, 20, 0.92);
+}
+.ig-action.live { --rim: var(--gold-2); }
+.ig-choices { display: flex; align-items: center; gap: 12px; }
+.ig-choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 248px;
+  height: 76px;
+  padding: 0 16px 0 6px;
+  border: 0;
+  color: #f6e8b8;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ig-choice-btn > span { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.ig-choice-btn b { font-size: 24px; font-weight: 400; line-height: 1.1; white-space: nowrap; }
+.ig-choice-btn small { display: -webkit-box; max-width: 240px; overflow: hidden; color: #e6dcc0; font-size: 12px; line-height: 14px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.ig-choice-btn.stay { --rim: #f0994c; --shade: #6e2e10; background: #173422; }
+.ig-choice-btn.leave { --rim: #e9c279; --shade: #3a2410; background: #6a4a2a; }
+.ig-choice-btn:hover:not(:disabled) { filter: brightness(1.15); }
+.ig-choice-btn:active:not(:disabled) { transform: translateY(var(--px)); }
+.ig-choice-btn.chosen { --rim: #fff2b8; outline: calc(var(--px) * 2) solid var(--gold); outline-offset: calc(var(--px) * 2); }
+.ig-choice-btn.chosen.stay { background: #24603a; }
+.ig-choice-btn.chosen.leave { background: #8a6234; }
+.ig-choice-btn:disabled { cursor: default; filter: grayscale(0.6) brightness(0.7); }
+.ig-choice-btn small.safe { color: #9fe6b4; }
+.ig-choice-btn small.warn { color: #ffd27a; }
+.ig-choice-btn small.danger { color: #ff9a8a; }
+.ig-choice-side { display: flex; min-width: 72px; flex-direction: column; align-items: center; gap: 6px; }
+.ig-big-timer { color: var(--gold); font-size: 48px; font-weight: 400; line-height: 1; }
+.ig-big-timer small { margin-left: 2px; color: var(--muted); font-size: 12px; }
+.ig-big-timer.low { color: var(--bad); animation: ig-blink 0.6s steps(2, jump-none) infinite; }
+.ig-choice-hint { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.app-shell .ig-choice-side .quiet-button { min-height: 32px; padding: 4px 14px; font-size: 12px; }
+.ig-action-note { display: flex; min-width: 0; flex: 0 1 auto; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 4px; }
+.ig-action-note strong { color: var(--gold); font-size: 24px; font-weight: 400; line-height: 1.2; white-space: nowrap; }
+.ig-action-note span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.app-shell .ig-action-note .primary-button.ig-cancel-auto { width: auto; min-height: 48px; margin: 0; padding: 0 20px; font-size: 24px; white-space: nowrap; }
+.ig-mine { display: flex; flex: 0 0 auto; align-items: center; gap: 16px; margin-left: auto; }
+.ig-mine > span { display: flex; align-items: center; gap: 6px; }
+.ig-mine small { color: var(--muted); font-size: 12px; }
+.ig-mine b { color: var(--text); font-size: 24px; font-weight: 400; line-height: 1; }
+.ig-mine b i { margin-left: 2px; color: var(--muted); font-size: 12px; font-style: normal; }
+.ig-mine > span:first-child b { color: #c8f5d8; }
+.ig-mine > span:nth-child(2) b { color: var(--gold); }
+.ig-action-tools { display: flex; flex: 0 0 auto; flex-direction: column; align-items: stretch; gap: 6px; }
+.ig-action-tools:empty, .ig-hint-slot:empty { display: none; }
+.app-shell .ig-action-tools .quiet-button { padding: 4px 12px; font-size: 12px; white-space: nowrap; }
+.ig-action-feedback { position: absolute; left: 12px; bottom: 2px; margin: 0; font-size: 12px; }
+
+/* ---------- 浮出提示、局末小结 ---------- */
+.ig-toast {
+  position: absolute;
+  z-index: 70;
+  left: 50%;
+  top: 74px;
+  max-width: calc(100% - 48px);
+  padding: 8px 16px;
+  box-sizing: border-box;
+  color: var(--text);
+  background: rgba(10, 18, 20, 0.95);
+  font-size: 24px;
+  line-height: 1.25;
+  text-align: center;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 var(--px) var(--edge), inset 0 0 0 var(--px) #456b58, 0 6px 0 rgba(0, 0, 0, 0.35);
+  animation: ig-toast-in 0.25s steps(3, jump-none);
+  pointer-events: none;
+}
+.ig-toast.gold { color: var(--gold); box-shadow: 0 0 0 var(--px) var(--edge), inset 0 0 0 var(--px) var(--gold), 0 6px 0 rgba(0, 0, 0, 0.35); }
+.ig-toast.danger { color: #fff4ec; background: rgba(110, 16, 20, 0.96); box-shadow: 0 0 0 var(--px) var(--edge), inset 0 0 0 var(--px) #ff9a8a; }
+.ig-toast.reveal { color: #2a1c06; background: var(--gold); box-shadow: 0 0 0 var(--px) var(--edge), inset 0 0 0 var(--px) #fff2b8; font-size: 36px; }
+@keyframes ig-toast-in { from { transform: translate(-50%, -12px); } }
+.ig-summary {
+  --rim: var(--gold-2);
+  position: absolute;
+  z-index: 65;
+  left: 50%;
+  bottom: 12px;
+  display: flex;
+  width: min(560px, calc(100% - 32px));
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px 16px;
+  box-sizing: border-box;
+  background: rgba(13, 25, 24, 0.96);
+  text-align: center;
+  transform: translateX(-50%);
+  animation: ig-toast-in 0.3s steps(3, jump-none);
+}
+.ig-summary-banner {
+  display: grid;
+  width: 320px;
+  height: 64px;
+  margin-top: -24px;
+  place-items: center;
+  color: #f6e8b8;
+  background: center / 320px 64px no-repeat;
+  image-rendering: pixelated;
+  font-size: 24px;
+  text-shadow: 2px 2px 0 #050a0b;
+}
+.ig-summary p { margin: 0; color: var(--text); font-size: 12px; line-height: 1.6; }
+.ig-summary p.big { font-size: 24px; line-height: 1.3; }
+.ig-summary p.bad { color: var(--bad); }
+.ig-summary p.gold { color: var(--gold); }
+.ig-summary p.muted { color: var(--muted); }
+
+/* 飞行的宝石、神器，闪光：盖在整块牌桌上的一层，位置按元素实际坐标算 */
+.ig-fx { position: absolute; z-index: 80; inset: 0; overflow: visible; pointer-events: none; }
+.ig-flight {
+  position: absolute;
+  width: calc(16px * var(--fs));
+  height: calc(16px * var(--fs));
+  margin: calc(-8px * var(--fs)) 0 0 calc(-8px * var(--fs));
+  background-position: 0% 0;
+  background-repeat: no-repeat;
+  background-size: 600% 100%;
+  image-rendering: pixelated;
+  animation: ig-fly 0.75s cubic-bezier(0.3, 0, 0.6, 1) both, ig-sprite 0.48s steps(6, jump-none) infinite;
+}
+.ig-flight.artifact { background-size: 100% 100%; animation: ig-fly 0.9s cubic-bezier(0.3, 0, 0.6, 1) both; }
+@keyframes ig-fly {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * 0.5 - 48px)); }
+  99% { transform: translate(var(--dx), var(--dy)); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+.ig-spark {
+  position: absolute;
+  width: calc(32px * var(--fs));
+  height: calc(32px * var(--fs));
+  margin: calc(-16px * var(--fs)) 0 0 calc(-16px * var(--fs));
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  background-size: 600% 100%;
+  image-rendering: pixelated;
+  animation: ig-sprite 0.48s steps(6, jump-none) both;
+}
+
+/* ---------- 右边：状态、记录 / 各局 / 聊天 ---------- */
+.ig-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
+.ig-panel { --rim: #456b58; background: var(--panel); }
+.ig-status { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
+.ig-status h2 { margin: 0; color: var(--gold); font-size: 24px; font-weight: 400; line-height: 1.25; }
+.ig-status p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.ig-feedback { color: var(--ok) !important; }
+.ig-feedback.error { color: var(--bad) !important; }
+.ig-tabs { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.ig-tab-bar { display: flex; border-bottom: var(--px) solid var(--panel-2); }
+.ig-tab-bar button { flex: 1; padding: 10px 0; border: 0; color: var(--muted); background: none; font: inherit; cursor: pointer; }
+.ig-tab-bar button.active { color: var(--gold); box-shadow: inset 0 calc(var(--px) * -2) 0 var(--gold); }
+.ig-tab-bar em { margin-left: 6px; padding: 0 4px; color: #2a1c06; background: var(--gold); font-style: normal; }
+.ig-log, .ig-rounds { flex: 1; min-height: 0; margin: 0; padding: 10px 14px; overflow-y: auto; list-style: none; }
+.ig-log li { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.ig-log li + li { margin-top: 2px; }
+.ig-log li:first-child { color: var(--text); }
+.ig-rounds li { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: var(--px) solid var(--panel-2); color: var(--muted); font-size: 12px; line-height: 1.5; }
+.ig-rounds strong { color: var(--text); font-weight: 400; }
+.ig-rounds .bad { color: var(--bad); }
+.ig-muted { margin: 0; padding: 10px 14px; color: var(--muted); font-size: 12px; }
+.ig-chat { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.ig-chat .room-chat { display: flex; flex: 1; min-height: 0; flex-direction: column; margin: 0; box-shadow: none; }
+.ig-chat .room-chat-list { flex: 1 1 auto; height: auto; min-height: 80px; }
+.app-shell .ig-drawer-toggle { display: inline-flex; }
+.ig-screen:not(.with-side):not(.mobile) .ig-side {
+  position: absolute;
+  z-index: 90;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 100%);
+  padding: 10px;
+  box-sizing: border-box;
+  background: rgba(10, 18, 20, 0.97);
+  box-shadow: 0 0 0 var(--px) var(--edge), calc(var(--px) * -2) 0 0 rgba(5, 10, 11, 0.6);
+}
+
+/* ---------- 终局 ---------- */
+.app-shell .gm-panel.ig-final { --rim: var(--gold-2); width: min(640px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; padding-top: 12px; box-sizing: border-box; background: var(--panel); }
+.ig-final-head { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; }
+.ig-final-banner { display: grid; width: 320px; height: 64px; margin-top: -8px; place-items: center; background: center / 320px 64px no-repeat; image-rendering: pixelated; }
+.app-shell .ig-final-banner h2 { margin: 0; color: #f6e8b8; font-size: 24px; text-shadow: 2px 2px 0 #050a0b; }
+.ig-standings { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.ig-standings li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; color: var(--text); background: var(--panel-2); box-shadow: inset calc(var(--px) * 3) 0 0 var(--seat, var(--rim)); }
+.ig-standings li.winner { box-shadow: inset calc(var(--px) * 3) 0 0 var(--seat, var(--gold)), inset 0 0 0 var(--px) var(--gold); }
+.ig-rank { display: grid; min-width: 32px; place-items: center; color: var(--gold); font-size: 24px; }
+.ig-standing-name { display: flex; flex: 1 1 auto; min-width: 7em; flex-direction: column; gap: 2px; }
+.ig-standing-name strong { overflow: hidden; font-size: 24px; font-weight: 400; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.ig-standing-name small { color: var(--muted); line-height: 1.5; }
+.ig-standing-arts { display: flex; flex: 0 0 auto; gap: 2px; }
+.ig-final-score { min-width: 2em; color: var(--gold); font-size: 36px; font-weight: 400; line-height: 1; text-align: right; }
+.ig-final-note { margin: 0 0 8px; color: var(--muted); font-size: 12px; text-align: center; }
+.ig-rematch { color: var(--muted); font-size: 12px; }
+.ig-rematch .gm-panel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.app-shell .ig-final .gm-panel-actions :is(.primary-button, .quiet-button) { flex: 1 1 auto; width: auto; min-height: 48px; margin: 0; padding: 0 16px; font-size: 24px; white-space: nowrap; }
+.app-shell .ig-final .gm-panel-actions .primary-button { flex-grow: 2; }
+.app-shell .ig-show-final { position: fixed; z-index: 30; right: 24px; bottom: 24px; width: auto; min-height: 48px; margin: 0; padding: 0 20px; font-size: 24px; }
+
+/* ---------- 中等宽度（没有侧栏）：顶栏收紧 ---------- */
+@media (max-width: 1199px) {
+  .ig-topbar .brand-name span { display: none; }
+  .ig-topbar .connection-status { gap: 0; font-size: 0; }
+  .ig-topbar-right { gap: 8px; }
+  .ig-turn { gap: 10px; }
+}
+@media (max-width: 1100px) {
+  .ig-choice-btn { min-width: 220px; }
+  .ig-stats { gap: 12px; }
+}
+
+/* ---------- 手机：上下排，可以往下滚一点 ---------- */
+.ig-screen.mobile { height: auto; min-height: 100dvh; overflow: visible; gap: 6px; padding: 0 8px 16px; }
+.ig-screen.mobile .ig-topbar { height: auto; min-height: 44px; flex-wrap: wrap; row-gap: 4px; padding: 6px 0; }
+.ig-screen.mobile .ig-topbar .brand-name span { display: none; }
+.ig-screen.mobile .ig-turn { order: 3; flex-basis: 100%; justify-content: flex-start; gap: 8px; }
+.ig-screen.mobile .ig-turn-text { flex: 1 1 auto; white-space: nowrap; }
+.ig-screen.mobile .ig-pips .ig-pip { padding: 1px; }
+.ig-screen.mobile .ig-round-num { display: none; }
+.ig-screen.mobile .ig-topbar-right { gap: 6px; margin-left: auto; }
+.ig-screen.mobile .ig-topbar-right .connection-status { display: none; }
+.ig-screen.mobile .ig-main { display: flex; flex-direction: column; gap: 10px; }
+.ig-screen.mobile .ig-table { gap: 6px; padding: 4px; overflow: visible; }
+.ig-screen.mobile .ig-info { flex-wrap: wrap; height: auto; gap: 4px 10px; padding: 4px 6px; }
+.ig-screen.mobile .ig-hazards { gap: 2px; }
+.ig-screen.mobile .ig-hazard { width: 40px; }
+.ig-screen.mobile .ig-stats { flex: 1 1 100%; justify-content: space-between; gap: 6px; }
+.ig-screen.mobile .ig-stat { gap: 3px; }
+.ig-screen.mobile .ig-artifacts > span > small { display: none; }
+.ig-screen.mobile .ig-path { flex: 0 0 auto; padding: 4px; }
+.ig-screen.mobile .ig-card-float { padding: 1px 3px; font-size: 12px; }
+.ig-screen.mobile .ig-camp { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ig-screen.mobile .ig-tent { gap: 2px; padding: 6px 4px 4px; }
+.ig-screen.mobile .ig-tent-stats { height: 24px; }
+.ig-screen.mobile .ig-tent-stats small { display: none; }
+.ig-screen.mobile .ig-tag { padding: 0 2px; }
+.ig-screen.mobile .ig-action { flex-wrap: wrap; gap: 6px; min-height: 0; padding: 6px; }
+.ig-screen.mobile .ig-choices { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; }
+.ig-screen.mobile .ig-choice-btn { flex: 1 1 0; min-width: 0; height: 64px; gap: 6px; padding: 0 6px 0 4px; }
+.ig-screen.mobile .ig-choice-btn small { max-width: none; }
+.ig-screen.mobile .ig-choice-side { flex: 1 1 100%; flex-direction: row; justify-content: center; min-width: 0; gap: 12px; }
+.ig-screen.mobile .ig-big-timer { font-size: 24px; }
+.ig-screen.mobile .ig-action-note { flex: 1 1 100%; }
+.ig-screen.mobile .ig-mine { flex: 1 1 auto; justify-content: flex-start; gap: 12px; margin-left: 0; }
+.ig-screen.mobile .ig-action-tools { flex-direction: row; }
+.ig-screen.mobile .ig-action-feedback { position: static; flex: 1 1 100%; }
+.ig-screen.mobile .ig-side { min-height: 360px; }
+.ig-screen.mobile .ig-status { display: none; }
+.ig-screen.mobile .ig-toast { top: 120px; }
+.ig-screen.mobile .ig-path:has(.ig-summary) { z-index: 5; overflow: visible; }
+.ig-screen.mobile .ig-summary { top: calc(100% - 24px); bottom: auto; width: calc(100% - 8px); padding: 0 8px 10px; }
+.ig-screen.mobile .ig-summary-banner { margin-top: -16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-card.fresh, .ig-card.wobble, .ig-explorer, .ig-path.collapse, .ig-choice-card.flip, .ig-choice-wait, .ig-timer.low, .ig-big-timer.low,
+  .ig-tent.claim-glow, .ig-tent.home-glow .ig-tent-img, .ig-toast, .ig-summary, .ig-float, .ig-card-float { animation: none; }
+}
+
+/* ---------- 首页：一屏放下 ---------- */
+.app-shell .ig-hero {
+  --rim: #456b58;
+  position: relative;
+  width: 512px;
+  height: 288px;
+  margin-top: 16px;
+  overflow: hidden;
+  background: #0c1a1c center / 512px 288px no-repeat;
+  image-rendering: pixelated;
+}
+.ig-hero-cards { position: absolute; left: 50%; bottom: 20px; display: flex; gap: 8px; transform: translateX(-50%); }
+.ig-hero-cards > span { display: block; transform: translateY(calc((var(--i) - 2) * (var(--i) - 2) * 4px)); filter: drop-shadow(2px 2px 0 rgba(5, 10, 11, 0.8)); }
+.ig-hero-camp { position: absolute; left: 16px; top: 16px; display: flex; gap: 6px; }
+.ig-home-points { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.ig-home-points b { display: inline-block; min-width: 40px; margin-right: 8px; color: var(--gold); font-size: 24px; font-weight: 400; vertical-align: middle; }
+
+.app-shell.ig-home { width: min(1200px, calc(100% - 48px)); }
+.ig-home .welcome-grid { grid-template-columns: minmax(512px, 1fr) 420px; grid-template-rows: minmax(0, 1fr); align-items: center; gap: 48px; padding: 24px 0; }
+.ig-home .welcome-copy { padding: 0; }
+.ig-home-side { display: flex; max-height: 100%; min-width: 0; min-height: 0; flex-direction: column; gap: 16px; }
+.ig-home-side .entry-card { flex: 0 0 auto; }
+.app-shell.ig-home .online-rooms { display: flex; min-height: 0; flex: 0 1 auto; flex-direction: column; margin: 0; padding: 0; border-top: 0; }
+.app-shell.ig-home .online-rooms > * { flex: 0 0 auto; }
+.app-shell.ig-home .online-rooms-heading { margin-bottom: 8px; }
+.app-shell.ig-home .online-rooms-heading h2 { margin-top: 2px; }
+.app-shell.ig-home .online-rooms .online-rooms-grid { flex: 0 1 auto; min-height: 56px; grid-template-columns: 1fr; overflow-y: auto; }
+.app-shell.ig-home .entry-card .primary-button { min-height: 56px; font-size: 24px; }
+@media (min-width: 900px) {
+  .app-shell.ig-home { height: 100vh; height: 100dvh; min-height: 0; }
+  .ig-home .topbar { flex: 0 0 auto; height: 64px; }
+  .ig-home .welcome-grid { flex: 1 1 auto; min-height: 0; }
+}
+@media (min-width: 900px) and (max-height: 820px) {
+  .app-shell.ig-home .welcome-copy h1 { margin: 12px 0; font-size: 48px; }
+  .app-shell.ig-home .entry-card { padding-top: 16px; padding-bottom: 20px; }
+  .app-shell.ig-home :is(.section-kicker, .step-indicator, .entry-footnote, .online-rooms-note) { display: none; }
+  .app-shell.ig-home .mode-switch { margin-top: 8px; }
+  .app-shell.ig-home .entry-form .field-label-spaced { margin-top: 12px; }
+  .app-shell.ig-home .entry-card .primary-button { margin-top: 14px; }
+  .ig-home .welcome-grid { padding: 12px 0; }
+  .app-shell.ig-home .entry-form .field-hint { display: none; }
+}
+@media (min-width: 900px) and (max-height: 720px) {
+  .ig-home-points { display: none; }
+  .app-shell.ig-home .entry-card-heading { display: none; }
+  .app-shell.ig-home .mode-switch { margin-top: 0; }
+  .app-shell.ig-home .entry-card .primary-button { min-height: 48px; }
+}
+@media (max-width: 899px) {
+  .app-shell.ig-home { width: calc(100% - 32px); }
+  .ig-home .welcome-grid { display: flex; flex-direction: column; align-items: stretch; gap: 20px; padding: 16px 0 32px; }
+  .ig-home .welcome-copy { display: contents; }
+  .ig-home .welcome-copy > * { order: 1; }
+  .ig-home .ig-home-side { display: contents; }
+  .ig-home .entry-card { order: 2; }
+  .app-shell.ig-home .ig-hero { order: 3; width: 100%; max-width: 512px; margin: 0 auto; background-size: cover; }
+  .ig-home-points { order: 4; }
+  .ig-home .online-rooms { order: 5; }
+  .app-shell.ig-home .welcome-copy h1 { margin: 0; }
+  .app-shell.ig-home :is(.eyebrow, .section-kicker, .step-indicator, .entry-footnote) { display: none; }
+  .app-shell.ig-home .entry-card { padding: 16px; }
+  .ig-home .topbar { height: 56px; }
+  .app-shell.ig-home .mode-switch { margin-top: 8px; }
+}
+@media (max-width: 559px) {
+  .app-shell.ig-home .ig-hero { height: 200px; }
+  .ig-hero-cards { gap: 4px; bottom: 10px; }
+  .ig-hero-camp { display: none; }
+}
+
+/* ---------- 等候房间：一屏放下（5 人以上时玩家列表分两列） ---------- */
+.app-shell.ig-room { width: min(1440px, calc(100% - 48px)); }
+.ig-room .room-layout { display: flex; width: 100%; min-height: 0; flex-direction: column; padding: 24px 0 16px; }
+.ig-room .room-heading { margin-bottom: 20px; }
+.ig-room .room-heading h1 { margin-top: 8px; }
+.ig-room .room-grid { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) minmax(0, 0.9fr); gap: 16px; align-items: start; }
+.ig-room .player-details strong { font-size: 24px; line-height: 1.25; }
+.ig-room .open-seat .player-details strong { color: var(--muted); font-size: 12px; }
+.ig-room .player-row { min-height: 56px; }
+.ig-room .player-list.many { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+.ig-room .player-list.many .player-row { min-height: 52px; }
+.ig-room .player-list.many .player-details span { display: none; }
+.ig-room :is(.player-avatar, .empty-avatar) { width: 44px; height: 44px; flex-basis: 44px; font-size: 24px; }
+.ig-member-avatar { position: relative; display: grid; place-items: center; overflow: hidden; }
+.ig-member-avatar img { position: absolute; left: 6px; top: -2px; width: 32px; height: 48px; image-rendering: pixelated; }
+.app-shell.ig-room .room-actions .primary-button { min-height: 56px; font-size: 24px; }
+.ig-room-chat { display: flex; min-height: 0; align-self: stretch; }
+.app-shell.ig-room .room-chat { display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; margin: 0; }
+.app-shell.ig-room .room-chat-list { flex: 1 1 auto; height: auto; min-height: 120px; }
+.ig-room .room-feedback { margin: 12px 0 0; }
+.ig-room .room-secure-note { display: none; }
 .ig-options { display: grid; gap: 8px; margin-top: 16px; }
-.ig-member-avatar { display: grid; place-items: center; color: #120e0b; font-size: 12px; }
-.ig-room-chat { min-height: 0; }
+.app-shell .ig-options .room-setting { justify-content: flex-start; padding: 8px 10px; text-align: left; }
+.ig-options .room-setting > span { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px; }
+.ig-options .room-setting b { font-size: 24px; font-weight: 400; line-height: 1.1; }
+.ig-options .room-setting small { color: var(--muted); font-size: 12px; }
+.ig-room-preview { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-top: 14px; }
+.ig-room-preview figure { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0; color: var(--muted); font-size: 12px; }
+@media (min-width: 760px) {
+  .app-shell.ig-room { height: 100vh; height: 100dvh; min-height: 0; }
+  .ig-room .topbar { flex: 0 0 auto; height: 64px; }
+  .ig-room .room-layout { flex: 1 1 auto; }
+  .ig-room .room-grid { flex: 1 1 auto; min-height: 0; }
+  .ig-room .room-code-panel, .ig-room .player-panel { max-height: 100%; overflow-y: auto; box-sizing: border-box; }
+}
+@media (min-width: 760px) and (max-height: 760px) {
+  .ig-room .room-heading .eyebrow { display: none; }
+  .app-shell.ig-room .room-heading h1 { margin-top: 0; font-size: 24px; }
+  .app-shell.ig-room .room-chat-list { min-height: 40px; }
+  .ig-options { margin-top: 10px; gap: 6px; }
+  .ig-room .room-feedback.feedback-success { display: none; }
+  .ig-room-preview { display: none; }
+}
+@media (min-width: 760px) and (max-height: 820px) {
+  .ig-room .room-layout { padding-top: 16px; }
+  .ig-room .room-heading { margin-bottom: 14px; }
+  .ig-room .room-heading p { display: none; }
+  .ig-room .player-panel .field-hint { margin: 8px 0; }
+  .ig-room .player-row { min-height: 50px; }
+  .app-shell.ig-room .room-actions .primary-button { margin-top: 6px; }
+}
+@media (min-width: 760px) and (max-width: 1180px) {
+  .ig-room .room-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  .ig-room .room-code-panel { grid-column: 1; grid-row: 1; min-height: 0; overflow-y: auto; }
+  .ig-room .player-panel { grid-column: 2; grid-row: 1 / 3; }
+  .ig-room .ig-room-chat { grid-column: 1; grid-row: 2; }
+}
+@media (max-width: 759px) {
+  .app-shell.ig-room { width: calc(100% - 32px); }
+  .ig-room .room-layout { padding-top: 16px; }
+  .ig-room .room-grid { display: flex; flex-direction: column; align-items: stretch; }
+  .app-shell.ig-room .room-chat-list { height: 210px; flex: 0 0 auto; }
+  .ig-room .room-heading { margin-bottom: 12px; }
+  .ig-room .room-heading p { display: none; }
+  .ig-room .player-panel { display: flex; flex-direction: column; }
+  .ig-room .player-panel > .field-hint { order: 3; }
+  .ig-room .player-row { min-height: 48px; }
+  .ig-room .player-list.many { grid-template-columns: 1fr; }
+  .ig-room .room-code-panel { order: 2; }
+  .ig-room .player-panel { order: 1; }
+  .ig-room .ig-room-chat { order: 3; }
+}
 
 /* ---------- 规则弹窗 ---------- */
-.app-shell .gm-panel.ig-rules { width: min(760px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; text-align: left; }
-.ig-rules .game-rules-block + .game-rules-block { margin-top: 12px; }
-.app-shell .ig-rules .game-rules-block h3 { margin: 0 0 4px; color: var(--gold); font-size: 12px; font-weight: 400; }
-.app-shell .ig-rules .game-rules-block :is(p, li) { margin: 0; color: var(--text); font-size: 12px; line-height: 1.7; }
+.app-shell .gm-panel.ig-rules { --rim: var(--gold-2); width: min(820px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; box-sizing: border-box; text-align: left; }
+.ig-rules .game-rules-block + .game-rules-block { margin-top: 14px; }
+.app-shell .ig-rules .game-rules-block h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; color: var(--gold); font-size: 24px; font-weight: 400; }
+.app-shell .ig-rules .game-rules-block :is(p, li) { margin: 0; color: var(--text); font-size: 12px; line-height: 1.8; }
 .app-shell .ig-rules .game-rules-block :is(ul, ol) { margin: 0; padding-left: 20px; }
 .app-shell .ig-rules .game-rules-block b { color: var(--gold); font-weight: 400; }
+.ig-rules-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 4px 0 8px; }
+.ig-rules-row figure { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0; color: var(--muted); font-size: 12px; }
 .ig-rules .gm-panel-actions { margin-top: 16px; }
-
-/* ---------- 调试牌桌 ---------- */
-.app-shell.ig-game { width: 100%; max-width: none; margin: 0; padding: 0 12px 24px; box-sizing: border-box; }
-.ig-debug { display: flex; flex-direction: column; gap: 8px; color: var(--text); font-size: 12px; }
-.ig-debug-top { flex-wrap: wrap; gap: 12px; }
-.ig-debug-status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 24px; }
-.ig-debug-status b { color: var(--gold); font-weight: 400; }
-.ig-debug-timer { color: var(--bad); }
-.ig-debug-note { color: var(--muted); }
-.ig-debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
-.ig-debug-panel { min-width: 0; padding: 12px; background: var(--panel); }
-.ig-debug-panel h3 { margin: 0 0 8px; color: var(--gold); font-size: 12px; font-weight: 400; }
-.ig-debug-panel p { margin: 6px 0; line-height: 1.7; }
-.ig-debug-wide { grid-column: 1 / -1; }
-.ig-debug-path { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.ig-card { padding: 6px 10px; font-size: 24px; line-height: 1; background: #2e2319; }
-.ig-card-treasure { color: #f0c43c; }
-.ig-card-hazard { color: #ff7a6a; }
-.ig-card-artifact { color: #6ad8d0; }
-.ig-card.taken { opacity: 0.5; }
-.ig-debug-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
-.ig-debug-actions .primary-button, .ig-debug-actions .quiet-button { min-height: 48px; font-size: 24px; }
-.ig-debug-events { margin: 0; padding-left: 18px; line-height: 1.7; }
-.ig-debug-table { width: 100%; border-collapse: collapse; }
-.ig-debug-table th, .ig-debug-table td { padding: 6px 8px; border-bottom: 1px solid #3d2e22; text-align: left; }
-.ig-debug-table tr.me td { color: var(--gold); }
-.ig-debug-raw pre { max-height: 360px; overflow: auto; padding: 8px; background: var(--panel); font-size: 12px; }
