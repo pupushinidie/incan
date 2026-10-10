@@ -9,6 +9,7 @@
  *   &from=场景名（先显示这个场景，0.8 秒后换成 s，用来看翻牌、亮拳、回营地、塌方这些动画）
  *   &chat=1（聊天里放几条示例消息，侧栏切到聊天）
  *   &nav=0（不显示顶上的场景导航，截图用）
+ *   &tut=none / again（等候房间的新手教程入口：不放 / 学过以后的小按钮；默认是第一次来的邀请卡）
  *
  * 界面阶段维护；教程和验收要加场景就往 UI_SCENES / ROOM_SCENES 里加，不要删别人的。生产构建只打包 index.html，不带这个页面。
  */
@@ -34,6 +35,7 @@ import GameRules from "./GameRules.js";
 import RoomChat from "./RoomChat.js";
 import { socket } from "./socket.js";
 import { applyTheme, readTheme, ThemeToggle, useTheme } from "./theme.js";
+import { TutorialInvite } from "./tutorial/Invite.js";
 import { useVoice } from "./voice.js";
 import "./styles.css";
 import "./app-pixel.css";
@@ -265,6 +267,17 @@ function PreviewRoom() {
         onAddBot={() => {}}
         onDissolve={() => { void confirm({ title: "解散房间？", detail: "所有玩家都会被移出，当前对局也会结束。", confirmLabel: "解散" }); }}
         chat={<RoomChat room={room} voice={voice} />}
+        tutorial={
+          params.get("tut") === "none" ? undefined : (
+            <TutorialInvite
+              record={params.get("tut") === "again" ? "done" : null}
+              title="等人的时候，先学一下？"
+              text="咕噜嘎带你在真牌桌上走一遍，不会离开房间，房主一开局就自动回来。"
+              again="看新手教程"
+              onOpen={() => {}}
+            />
+          )
+        }
       />
       {confirmDialog}
       <Nav />
