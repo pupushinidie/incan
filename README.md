@@ -120,6 +120,19 @@ node scripts/test-bot.mjs solo 5           # 不等真人：5 个机器人自己
 
 教程锚点（`data-tutorial`）的清单在流水线交接报告 `handoff/ui.md`。
 
+美术：`public/art/` 是 PixelLab 正式美术（`art/out/final/` 按 `art/spec.md` 同名同尺寸覆盖过来）；代码画的简洁版原图留在 `art/simple/` 备查。
+
+## 新手教程
+
+站内统一做法（`~/projects/pipeline/handbook/tutorial-notes.md`，参考欲罢不能）：不连服务器，浏览器里直接跑规则引擎，牌桌就是真正的 `GameBoard`，咕噜嘎的对话框叠在上面。
+
+- **剧本** `packages/game/src/tutorial.ts`：3 人局（你 + 咕噜一号、咕噜二号），34 步（讲解 19、动手 5、看咕噜和翻牌 10）、15 课。前两局的牌序按剧本摆好（第 1 局：宝物 11 → 火焰 → 神器 → 宝物 5；第 2 局：火焰 → 宝物 7 → 火焰），两个咕噜按剧本选，所以「两人一起走拿不到神器」「单独回营地带走神器」「第一张是危险直接翻」「同种危险第二次出现塌方、火焰永久少一张」「神器留到下局」都一定发生。剧本停在第 3 局开头，接着练习局：咕噜交给人机（只看脱敏局面），翻牌和局末按服务器同样的停顿（`config.pauseMs`）推进。
+- **剧本单测** `packages/game/test/tutorial.test.ts`：从头走到尾每步合法、锚点看得见；关键几幕；剧本自身（id、finale、主句长度、补充不超过两句）；牌序生效；接练习局 150 局都能打完。
+- **网页**：`src/tutorial/`（共用教练层，从谁是牛头王复制，不改逻辑）、`src/TutorialMode.tsx`、`src/tutorialGame.ts`（「提示」的说法 = `botAdvice` 提示模式的理由；6 条「第一次遇到」小贴士）。入口在首页简介下面和等候房间右栏顶上；地址带 `?tutorial` 直接打开；从等候房间进来时房主一开局就自动回牌桌。
+- **提示**：只有自己和人机时才有（教程后的练习局，或一个人加人机开的房间），操作条右边「提示」按钮，键盘 H。练习局不显示「托管」。
+- **本机记录**：`gm-tutorial-incan`（done / skipped）、`gm-tips-incan`（看过的小贴士）、全站 `gm-tips-off`。
+- **走查脚本** `~/projects/qa-reports/tools/incan-tut.mjs <输出目录> flow|skip|waiting|room [尺寸] [主题]`（`SHORT=1` 只走到练习局开头）。
+
 ## 目录
 
 | 位置 | 内容 |

@@ -363,7 +363,9 @@ function GameBoard({
     fresh: freshEvent?.type === "CardRevealed" ? freshEvent.index : null,
     freshLabel:
       freshEvent?.type === "CardRevealed" && freshEvent.card.kind === "treasure"
-        ? `每人 +${freshEvent.share}${freshEvent.remainder ? ` · 余 ${freshEvent.remainder}` : ""}`
+        ? freshEvent.share === 0
+          ? `不够分 · 余 ${freshEvent.remainder}`
+          : `每人 +${freshEvent.share}${freshEvent.remainder ? ` · 余 ${freshEvent.remainder}` : ""}`
         : freshEvent?.type === "CardRevealed" && freshEvent.card.kind === "hazard" && freshEvent.first
           ? "第一次，没事"
           : null,

@@ -731,3 +731,8 @@
   .app-shell .ig-room-chat .tut-invite .tut-invite-go { width: auto; padding: 4px 12px; }
   .ig-room-chat .tut-invite-copy span { display: none; }
 }
+/* 「第一次遇到」小贴士：别盖住情况条（塌方机会、神器这些要一直看得见）。宽屏放到右栏状态上，1024 放到路径中间的空地上 */
+.ig-screen.with-side .tut-toast { top: 64px; right: 24px; left: auto; translate: none; flex-wrap: wrap; width: 300px; }
+.ig-screen.with-side .tut-toast p { flex: 1 1 180px; }
+.ig-screen.with-side .tut-toast-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; width: 100%; }
+.ig-screen:not(.with-side):not(.mobile) .tut-toast { top: 46%; }

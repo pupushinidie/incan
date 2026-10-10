@@ -79,7 +79,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
   {
     kind: "info", id: "split", lesson: "宝物平分", anchor: "last-card",
     say: "宝物 11 颗，神庙里 3 个人平分：每人 3 颗。",
-    note: "除不尽的 2 颗留在路上，谁也没拿到。",
+    note: "除不尽的 2 颗留在路上，谁也没拿到；所以同在神庙里的人，手上的宝石总是一样多。",
   },
   {
     kind: "info", id: "path-gems", anchor: "path-gems",
@@ -136,7 +136,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
   {
     kind: "info", id: "no-artifact", anchor: "last-card", face: "think",
     say: "两个人以上一起走，谁都拿不到神器。",
-    note: "所以神器还躺在路上。",
+    note: "所以神器还躺在路上；这局结束时还没人拿走，它就作废了。",
   },
   { kind: "watch", id: "alone", anchor: "path", say: "神庙里只剩你，翻下一张。", moves: [ADVANCE] },
   {
