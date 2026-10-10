@@ -12,5 +12,6 @@
 :root[data-theme="day"] .ig-card-note { color: #f6e8b8; background: rgba(5, 10, 11, 0.88); }
 :root[data-theme="day"] .ig-choice-btn { color: #f6e8b8; }
 :root[data-theme="day"] .ig-toast.danger { color: #fff4ec; }
-:root[data-theme="day"] .ig-summary-banner, :root[data-theme="day"] .app-shell .ig-final-banner h2 { color: #f6e8b8; text-shadow: 2px 2px 0 #050a0b; }
+:root[data-theme="day"] .ig-summary-banner { color: #f6e8b8; text-shadow: 1px 1px 0 #050a0b, -1px 0 0 #050a0b, 1px 0 0 #050a0b, 0 -1px 0 #050a0b, 0 1px 0 #050a0b; }
+:root[data-theme="day"] .app-shell .ig-final-banner h2 { color: #f6e8b8; text-shadow: 2px 2px 0 #050a0b, -2px 0 0 #050a0b, 2px 0 0 #050a0b, 0 -2px 0 #050a0b, 0 2px 0 #050a0b; }
 :root[data-theme="day"] .ig-hazard.boom small { color: #fff4ec; }

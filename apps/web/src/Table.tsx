@@ -210,9 +210,22 @@ export function PathView({ game, layout, width, players, fx, cardRef, slotRef, e
                   <Px src={art.badge(value)} w={20} h={20} s={s >= 3 ? 2 : 1} />
                 </span>
               )}
-              {taken && <span className="ig-card-note">{lost ? "作废" : s === 1 || !fx.takenBy.get(index) ? "已拿走" : `${fx.takenBy.get(index)}拿走`}</span>}
+              {taken && <span className="ig-card-note">{lost ? "作废" : s === 1 ? "拿走" : !fx.takenBy.get(index) ? "已拿走" : `${fx.takenBy.get(index)}拿走`}</span>}
               {fx.fresh === index && fx.freshLabel && (
-                <span className={`ig-card-float ${spot.left < cw ? "at-left" : spot.left + 2 * cw > width ? "at-right" : ""}`}>{fx.freshLabel}</span>
+                <span
+                  className={[
+                    "ig-card-float",
+                    spot.left < cw ? "at-left" : spot.left + 2 * cw > width ? "at-right" : "",
+                    // 不压这张牌的数字和名字：先放牌下面（空地或「下一张」）；最后一行放不下时放右边（「下一张」和小队那里）；都不行才放上面
+                    spot.top + ch + (layout.mobile ? 18 : 32) <= layout.pathH - (layout.mobile ? 8 : 20)
+                      ? "below"
+                      : spot.left + cw + (layout.mobile ? 100 : 180) <= width
+                        ? "beside"
+                        : "above",
+                  ].join(" ")}
+                >
+                  {fx.freshLabel}
+                </span>
               )}
             </div>
           );

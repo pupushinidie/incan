@@ -132,7 +132,7 @@
 }
 @keyframes ig-crack { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 .ig-art-value { position: absolute; top: calc(var(--px) * -3); right: calc(var(--px) * -3); filter: drop-shadow(1px 1px 0 #050a0b); }
-.ig-card-note { position: absolute; left: 50%; bottom: 4px; padding: 0 4px; color: #f6e8b8; background: rgba(5, 10, 11, 0.88); font-size: 12px; line-height: 16px; white-space: nowrap; transform: translateX(-50%); }
+.ig-card-note { position: absolute; left: 50%; top: 40%; padding: 0 4px; color: #f6e8b8; background: rgba(5, 10, 11, 0.88); font-size: 12px; line-height: 16px; white-space: nowrap; transform: translateX(-50%); }
 .ig-card-float {
   position: absolute;
   z-index: 50;
@@ -148,6 +148,9 @@
   box-shadow: 0 0 0 var(--px) #2fa878;
   animation: ig-card-float 2.6s steps(13, jump-none) forwards;
 }
+.ig-card-float.below { bottom: auto; top: calc(100% + 4px); }
+.ig-card-float.above { bottom: calc(100% + 4px); }
+.ig-card-float.beside, .ig-card-float.beside.at-left { left: calc(100% + 4px); right: auto; bottom: auto; top: 30%; transform: none; animation-name: ig-card-float-l; }
 .ig-card-float.at-left { left: 0; transform: none; animation-name: ig-card-float-l; }
 .ig-card-float.at-right { left: auto; right: 0; transform: none; animation-name: ig-card-float-l; }
 @keyframes ig-card-float-l {
@@ -375,7 +378,7 @@
   background: center / 160px 32px no-repeat;
   image-rendering: pixelated;
   font-size: 12px;
-  text-shadow: 1px 1px 0 #050a0b;
+  text-shadow: 1px 1px 0 #050a0b, -1px 0 0 #050a0b, 1px 0 0 #050a0b, 0 -1px 0 #050a0b, 0 1px 0 #050a0b;
 }
 .ig-summary p { margin: 0; color: var(--text); font-size: 12px; line-height: 1.6; }
 .ig-summary p.big { font-size: 24px; line-height: 1.3; }
@@ -457,7 +460,7 @@
 .app-shell .gm-panel.ig-final { --rim: var(--gold-2); width: min(640px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; padding-top: 12px; box-sizing: border-box; background: var(--panel); }
 .ig-final-head { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; }
 .ig-final-banner { display: grid; width: 320px; height: 64px; margin-top: -8px; place-items: center; background: center / 320px 64px no-repeat; image-rendering: pixelated; }
-.app-shell .ig-final-banner h2 { margin: 0; color: #f6e8b8; font-size: 24px; text-shadow: 2px 2px 0 #050a0b; }
+.app-shell .ig-final-banner h2 { margin: 0; color: #f6e8b8; font-size: 24px; text-shadow: 2px 2px 0 #050a0b, -2px 0 0 #050a0b, 2px 0 0 #050a0b, 0 -2px 0 #050a0b, 0 2px 0 #050a0b; }
 .ig-standings { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .ig-standings li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; color: var(--text); background: var(--panel-2); box-shadow: inset calc(var(--px) * 3) 0 0 var(--seat, var(--rim)); }
 .ig-standings li.winner { box-shadow: inset calc(var(--px) * 3) 0 0 var(--seat, var(--gold)), inset 0 0 0 var(--px) var(--gold); }
@@ -510,6 +513,7 @@
 .ig-screen.mobile .ig-tent { gap: 2px; padding: 6px 4px 4px; }
 .ig-screen.mobile .ig-tent-stats { height: 24px; }
 .ig-screen.mobile .ig-tent-stats small { display: none; }
+.ig-screen.mobile .ig-tent-stats:has(.ig-spy-tent) { height: auto; flex-wrap: wrap; row-gap: 2px; }
 .ig-screen.mobile .ig-tag { padding: 0 2px; }
 .ig-screen.mobile .ig-tags { position: absolute; top: 2px; right: 2px; flex-direction: column; align-items: flex-end; }
 .ig-screen.mobile .ig-tent-top { justify-content: flex-start; gap: 4px; }
