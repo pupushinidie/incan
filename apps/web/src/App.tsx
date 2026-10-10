@@ -9,6 +9,10 @@ import RoomChat from "./RoomChat.js";
 import { roomRole, RoomSettingsPanel, SeatSwitch } from "./RoomExtras.js";
 import { socket } from "./socket.js";
 import { ThemeToggle, useTheme } from "./theme.js";
+import { TutorialInvite } from "./tutorial/Invite.js";
+import { readTutorial } from "./tutorial/storage.js";
+import { GAME_ID } from "./tutorialGame.js";
+import TutorialMode from "./TutorialMode.js";
 import { useVoice } from "./voice.js";
 
 type EntryMode = "create" | "join";
@@ -40,6 +44,25 @@ function App() {
   // 观战时从谁的座位看（默认第一位玩家）。
   const [watchId, setWatchId] = useState("");
   const voice = useVoice(room);
+
+  // 新手教程：首页或等候房间点进来（地址带 ?tutorial 时直接打开，游戏中心可以直接链过来）
+  const [tutorialOpen, setTutorialOpen] = useState(() => new URLSearchParams(window.location.search).has("tutorial"));
+  function closeTutorial() {
+    setTutorialOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("tutorial")) {
+      params.delete("tutorial");
+      const query = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
+    }
+  }
+  // 从等候房间进来看教程时，房主一开局就回到牌桌（不然这一步会超时转托管）
+  useEffect(() => {
+    if (tutorialOpen && room?.status === "playing") {
+      closeTutorial();
+      setNotice("对局开始了，教程先停在这里。");
+    }
+  }, [tutorialOpen, room?.status]);
 
   // 在房间里时服务端不推送在线牌桌列表；回到首页时主动拉一次最新的。
   useEffect(() => {
@@ -213,6 +236,14 @@ function App() {
     }
   }
 
+  if (tutorialOpen && room?.status !== "playing") {
+    return (
+      <main className="app-shell ig-game">
+        <TutorialMode name={name} brand={<Brand />} themeToggle={themeToggle} theme={theme} waitingRoom={room?.code} onExit={closeTutorial} />
+      </main>
+    );
+  }
+
   if (room?.status === "playing" && room.game) {
     const players = room.game.players;
     const watched = players.some((player) => player.id === watchId) ? watchId : players[0]!.id;
@@ -264,6 +295,15 @@ function App() {
           onAddBot={addBot}
           onDissolve={dissolveRoom}
           chat={<RoomChat room={room} voice={voice} />}
+          tutorial={
+            <TutorialInvite
+              record={readTutorial(GAME_ID)}
+              title="等人的时候，先学一下？"
+              text="咕噜嘎带你在真牌桌上走一遍，不会离开房间，房主一开局就自动回来。"
+              again="看新手教程"
+              onOpen={() => setTutorialOpen(true)}
+            />
+          }
         />
         {confirmDialog}
       </main>
@@ -295,6 +335,13 @@ function App() {
             <li><b>走</b>离开的人平分路上的余数，单独走还能拿神器</li>
             <li><b>爆</b>同一种危险第二次出现，里面的人全丢</li>
           </ul>
+          <TutorialInvite
+            record={readTutorial(GAME_ID)}
+            title="第一次玩？3 分钟学会"
+            text="咕噜嘎在真牌桌上带你走一局，学完和人机练一局。"
+            again="再看一遍新手教程"
+            onOpen={() => setTutorialOpen(true)}
+          />
           <Hero />
         </div>
 
@@ -426,6 +473,7 @@ export function RoomView({
   onAddBot,
   onDissolve,
   chat,
+  tutorial,
 }: {
   room: LobbyRoomSnapshot;
   busy: boolean;
@@ -438,6 +486,8 @@ export function RoomView({
   onAddBot: () => void;
   onDissolve: () => void;
   chat: ReactNode;
+  /** 新手教程入口（放在右栏顶上，1024 也看得到）。 */
+  tutorial?: ReactNode;
 }) {
   const { isHost, spectating } = roomRole(room);
   const openSeats = Math.max(0, room.capacity - room.members.length);
@@ -520,7 +570,7 @@ export function RoomView({
               {isHost && room.members.length < MIN_PLAYERS && <p className="field-hint centered">还需要至少 {MIN_PLAYERS - room.members.length} 位玩家加入，也可以点空座位上的「加人机」。</p>}
             </div>
           </section>
-          <div className="ig-room-chat">{chat}</div>
+          <div className="ig-room-chat">{!spectating && tutorial}{chat}</div>
         </div>
       ) : null}
 

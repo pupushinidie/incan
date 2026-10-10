@@ -24,6 +24,9 @@ import GameRules from "./GameRules.js";
 import { useLayout, type Layout } from "./layout.js";
 import { GameRoomMenu } from "./RoomExtras.js";
 import { socket } from "./socket.js";
+import { Coach, TipToast } from "./tutorial/Coach.js";
+import { useFirstTimeTips } from "./tutorial/tips.js";
+import { detectTips, GAME_ID, hintFor, TIPS, type Hint } from "./tutorialGame.js";
 import { bustTone, Camp, Icon, InfoBar, PathView, percent, Px, type PathFx, type TentFx } from "./Table.js";
 import type { Theme } from "./theme.js";
 import { artifactName, describeEvent } from "./words.js";
@@ -51,6 +54,12 @@ interface GameBoardProps {
   readonly onLeave: () => void;
   /** 操作条上留给教程的位置（「提示」按钮之类）。 */
   readonly actionExtra?: ReactNode;
+  /** 自己在 room.members 里的 id（默认 socket.id；教程里传固定值）。 */
+  readonly selfMemberId?: string;
+  /** online：真实对局；tutorial：剧本进行中（不出提示和小贴士）；practice：教程后的练习局（随时能看提示）。 */
+  readonly mode?: "online" | "tutorial" | "practice";
+  /** 结算框里替代「再来一局」的按钮（练习局放「结束教程」「再练一局」）。 */
+  readonly finalActions?: ReactNode;
 }
 
 function useCountdown(room: LobbyRoomSnapshot): number | null {
@@ -106,9 +115,13 @@ interface Toast {
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, theme, chat, onCommand, onRematch, onAuto, onDissolve, onLeave, actionExtra }: GameBoardProps) {
+function GameBoard({
+  room, busy, error, notice, brand, connection, themeToggle, theme, chat, onCommand, onRematch, onAuto, onDissolve, onLeave, actionExtra,
+  selfMemberId, mode = "online", finalActions,
+}: GameBoardProps) {
   const game = room.game!;
-  const member = room.members.find((candidate) => candidate.id === socket.id);
+  const memberId = selfMemberId ?? socket.id ?? "";
+  const member = room.members.find((candidate) => candidate.id === memberId);
   const spectating = !member;
   const selfId = member?.playerId ?? "";
   const isHost = member?.isHost ?? false;
@@ -130,6 +143,26 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
   const amLast = myTurn && pending.length === 1;
   const actions = canDecide ? legalActions(game, selfId) : [];
   const chance = bustChance(game);
+
+  // 「提示」：练习局随时能用；真实对局里只有自己和人机时能用（有别的真人就不显示，免得不公平）
+  const botsOnly = room.members.length > 1 && room.members.every((candidate) => candidate.playerId === selfId || candidate.bot === true);
+  const canHint = myTurn && (mode === "practice" || (mode === "online" && botsOnly));
+  const [hint, setHint] = useState<{ version: number; hint: Hint } | null>(null);
+  const shownHint = hint && hint.version === game.version && canHint ? hint.hint : null;
+  const toggleHint = () => setHint((current) => (current && current.version === game.version ? null : { version: game.version, hint: hintFor(game, selfId) }));
+  useEffect(() => {
+    if (!canHint) return;
+    const handle = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (event.metaKey || event.ctrlKey || event.altKey || target?.closest("input, textarea, [contenteditable]")) return;
+      if (event.key.toLowerCase() === "h") toggleHint();
+    };
+    window.addEventListener("keydown", handle);
+    return () => window.removeEventListener("keydown", handle);
+  }, [canHint, game.version]);
+
+  // 真实对局里第一次遇到某条规则（首张危险、塌方、神器……）时弹一句小贴士
+  const tips = useFirstTimeTips(GAME_ID, game.version, () => detectTips(game, selfId), TIPS, mode === "online" && !spectating);
   // 「对局已开始」这类提示只留到第一步动作
   const firstVersion = useRef(game.version);
   const shownNotice = game.version === firstVersion.current ? notice : "";
@@ -428,7 +461,17 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
       onUndecide={undecide}
       onAuto={onAuto}
       onLeave={onLeave}
-      extra={actionExtra}
+      showAuto={mode !== "practice"}
+      extra={
+        <>
+          {actionExtra}
+          {canHint && (
+            <button className={shownHint ? "quiet-button ig-hint on" : "quiet-button ig-hint"} type="button" data-tutorial="hint" onClick={toggleHint} title="人机会怎么选（键盘 H）">
+              提示
+            </button>
+          )}
+        </>
+      }
     />
   );
 
@@ -439,13 +482,16 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
         {detail && <p>{detail}</p>}
         {(error || shownNotice) && <p className={error ? "ig-feedback error" : "ig-feedback"} role={error ? "alert" : "status"}>{error || shownNotice}</p>}
       </section>
+      {mode !== "online" && chat}
       <section className="ig-panel ig-tabs">
         <div className="ig-tab-bar" role="tablist">
           <button type="button" role="tab" aria-selected={sideTabs.tab === "log"} className={sideTabs.tab === "log" ? "active" : ""} onClick={() => sideTabs.setTab("log")}>记录</button>
           <button type="button" role="tab" aria-selected={sideTabs.tab === "rounds"} className={sideTabs.tab === "rounds" ? "active" : ""} onClick={() => sideTabs.setTab("rounds")} data-tutorial="rounds-tab">各局</button>
-          <button type="button" role="tab" aria-selected={sideTabs.tab === "chat"} className={sideTabs.tab === "chat" ? "active" : ""} onClick={() => sideTabs.setTab("chat")}>
-            聊天{sideTabs.unread > 0 && <em>{sideTabs.unread}</em>}
-          </button>
+          {mode === "online" && (
+            <button type="button" role="tab" aria-selected={sideTabs.tab === "chat"} className={sideTabs.tab === "chat" ? "active" : ""} onClick={() => sideTabs.setTab("chat")}>
+              聊天{sideTabs.unread > 0 && <em>{sideTabs.unread}</em>}
+            </button>
+          )}
         </div>
         {sideTabs.tab === "log" && (log.length === 0 ? <p className="ig-muted">{game.history.length || game.departures.length ? "之前各局的结果在「各局」里。" : "还没有动作。"}</p> : <ul className="ig-log">{log.map((line) => <li key={line.key}>{line.text}</li>)}</ul>)}
         {sideTabs.tab === "rounds" && <RoundsList game={game} nameOf={nameOf} />}
@@ -531,7 +577,21 @@ function GameBoard({ room, busy, error, notice, brand, connection, themeToggle, 
         </div>
       </div>
 
-      {finished && <FinalDialog game={game} room={room} selfId={selfId} spectating={spectating} nameOf={nameOf} colorOf={colorOf} onRematch={onRematch} onLeave={onLeave} />}
+      {finished && <FinalDialog game={game} room={room} selfId={selfId} memberId={memberId} spectating={spectating} nameOf={nameOf} colorOf={colorOf} onRematch={onRematch} onLeave={onLeave} actions={finalActions} />}
+      {shownHint && (
+        <Coach
+          view={{
+            key: `hint-${game.version}`,
+            say: shownHint.say,
+            ...(shownHint.note ? { note: shownHint.note } : {}),
+            anchor: shownHint.anchor,
+            focus: false,
+            face: "think",
+            actions: <button className="quiet-button" type="button" onClick={() => setHint(null)}>知道了</button>,
+          }}
+        />
+      )}
+      {tips.tip && <TipToast tip={tips.tip} onClose={tips.dismiss} onNever={tips.never} />}
     </div>
   );
 }
@@ -588,7 +648,7 @@ function RoundPips({ game }: { game: GameState }) {
 }
 
 /** 操作条：两个大按钮、倒计时、自己的数字；不能决定时换成说明。 */
-function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actions, busy, amLast, chance, seconds, headline, detail, error, isError, seeAll, onDecide, onUndecide, onAuto, onLeave, extra }: {
+function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actions, busy, amLast, chance, seconds, headline, detail, error, isError, seeAll, onDecide, onUndecide, onAuto, onLeave, showAuto, extra }: {
   game: GameState;
   me: Player | null;
   layout: Layout;
@@ -609,6 +669,8 @@ function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actio
   onUndecide: () => void;
   onAuto: (enabled: boolean) => void;
   onLeave: () => void;
+  /** 练习局里没有托管（人机就在旁边，托管没意义）。 */
+  showAuto: boolean;
   extra?: ReactNode;
 }) {
   const finished = game.phase === "gameOver";
@@ -701,7 +763,7 @@ function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actio
       {body}
       {stats}
       <div className="ig-action-tools">
-        {!spectating && !finished && !autoPlaying && <button className="quiet-button" type="button" onClick={() => onAuto(true)} title="让人机替你选，随时可以取消" data-tutorial="btn-auto">托管</button>}
+        {showAuto && !spectating && !finished && !autoPlaying && <button className="quiet-button" type="button" onClick={() => onAuto(true)} title="让人机替你选，随时可以取消" data-tutorial="btn-auto">托管</button>}
         <span className="ig-hint-slot" data-tutorial="hint-slot">{extra}</span>
       </div>
       {error && <p className={isError ? "ig-feedback error ig-action-feedback" : "ig-feedback ig-action-feedback"} role={isError ? "alert" : "status"}>{error}</p>}
@@ -769,10 +831,14 @@ function RoundSummary({ game, me, startTent, nameOf }: { game: GameState; me: Pl
 
 // ---------- 终局 ----------
 
-function FinalDialog({ game, room, selfId, spectating, nameOf, colorOf, onRematch, onLeave }: {
+function FinalDialog({ game, room, selfId, memberId, spectating, nameOf, colorOf, onRematch, onLeave, actions }: {
   game: GameState;
   room: LobbyRoomSnapshot;
   selfId: string;
+  /** 自己在 room.members 里的 id（再来一局的同意名单按它记）。 */
+  memberId: string;
+  /** 教程练习局：替代「再来一局」的按钮。 */
+  actions?: ReactNode;
   spectating: boolean;
   nameOf: (id: string) => string;
   colorOf: (id: string) => ReturnType<typeof seatColor>;
@@ -780,7 +846,7 @@ function FinalDialog({ game, room, selfId, spectating, nameOf, colorOf, onRematc
   onLeave: () => void;
 }) {
   const result = game.finalResult!;
-  const accepted = room.rematch?.acceptedIds.includes(socket.id ?? "") ?? false;
+  const accepted = room.rematch?.acceptedIds.includes(memberId) ?? false;
   const [hidden, setHidden] = useState(false);
   if (hidden) {
     return <button className="primary-button ig-show-final" type="button" onClick={() => setHidden(false)}>看结算</button>;
@@ -823,6 +889,14 @@ function FinalDialog({ game, room, selfId, spectating, nameOf, colorOf, onRematc
             <div className="gm-panel-actions">
               <button className="quiet-button" type="button" onClick={() => setHidden(true)}>看牌桌</button>
               <button className="quiet-button" type="button" onClick={onLeave}>离开观战</button>
+            </div>
+          </div>
+        ) : actions ? (
+          <div className="ig-rematch">
+            <span>练习局打完了。</span>
+            <div className="gm-panel-actions">
+              <button className="quiet-button" type="button" onClick={() => setHidden(true)}>看牌桌</button>
+              {actions}
             </div>
           </div>
         ) : room.rematch && (

@@ -708,3 +708,20 @@
   .ig-standing-arts { display: none; }
   .app-shell .ig-final .gm-panel-actions .primary-button { order: -1; flex-basis: 100%; }
 }
+
+/* ---------- 新手教程（共用教练层在 tutorial/tutorial.css） ---------- */
+.ig-side .tut-checklist { flex: 0 0 auto; padding: 10px 14px; }
+.app-shell .ig-side .tut-checklist h3 { margin: 0 0 4px; color: var(--gold); font-size: 12px; font-weight: 400; }
+.app-shell .ig-side .tut-checklist h3 small { margin-left: 8px; color: var(--muted); font-size: 12px; }
+.app-shell .ig-side .tut-checklist ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.app-shell .ig-side .tut-checklist li { white-space: nowrap; }
+.ig-side .tut-checklist p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.ig-screen.mobile .ig-side .tut-checklist { display: none; }
+.app-shell .ig-hint.on { color: #10170f; background: var(--gold); }
+.ig-room-chat { flex-direction: column; gap: 12px; }
+.ig-room-chat > .tut-invite, .ig-room-chat > .tut-again { flex: 0 0 auto; }
+.app-shell .ig-room-chat > .tut-again { margin-top: 0; align-self: flex-start; }
+.ig-room-chat .tut-invite { flex-wrap: wrap; margin-top: 0; }
+.app-shell .ig-room-chat .tut-invite .tut-invite-go { width: 100%; }
+.ig-home .tut-invite { margin-top: 16px; }
+:root[data-theme="day"] .app-shell .ig-side .tut-checklist h3 { color: #94650a; }
