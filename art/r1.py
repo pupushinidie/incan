@@ -50,6 +50,9 @@ FLUX = {
     "cover-3": ("an explorers camp at night at the edge of the Andean jungle, a row of small colorful canvas tents and a campfire, "
                 "in the distance an ancient Inca stone temple doorway glowing with torchlight among the trees, starry sky, "
                 + COVER_STYLE, 384, 192, False, (905, 906)),
+    "cover-4": ("close view of a carved trapezoidal Inca stone doorway of massive fitted polygonal granite blocks at night, two burning "
+                "wall torches, on the stone floor in the foreground a glowing heap of green emerald gemstones and a small golden llama "
+                "figurine, hanging jungle vines, mysterious dark doorway, " + COVER_STYLE, 384, 192, False, (907, 908, 909)),
     "back": ("a carved dark mossy green stone tablet seen from the front, a golden Inca stepped cross chakana symbol carved in "
              "the center, small carved step pattern border, subtle moss in the cracks, pixel art game card back, flat, " + NO,
              36, 52, False, (911, 912, 913)),
@@ -105,7 +108,7 @@ V2 = {
 }
 
 # 优先级：先关键素材，再图标
-ORDER = (["scene-night", "scene-day", "cover-1", "cover-2", "cover-3", "back", "banner", "chest"]
+ORDER = (["scene-night", "scene-day", "cover-1", "cover-2", "cover-3", "cover-4", "back", "banner", "chest"]
          + ["hz-fire", "hz-mummy", "hz-rocks", "hz-snake", "hz-spider",
             "af-mask", "af-llama", "af-sun", "af-tumi", "af-idol",
             "gems-s", "gems-m", "gems-l", "tent", "tent-home", "explorer", "ch-torch", "ch-camp", "torch", "boulder"]
@@ -158,9 +161,16 @@ if __name__ == "__main__":
         print("余额", pixellab.balance(), flush=True)
     except Exception as error:
         print("查余额失败：", error, flush=True)
-    for n in names:
+    # 会员（2026-10-10）：同一个进程里用线程池并发（上限 10，这里 6），pxqueue 按进程占位；不要开多个出图进程
+    from concurrent.futures import ThreadPoolExecutor
+    workers = int(__import__("os").environ.get("R1_WORKERS", "6"))
+
+    def one(n):
         try:
             run(n)
         except Exception as error:  # 一样失败不挡后面的
             print(n, "失败：", error, flush=True)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        list(pool.map(one, names))
     print("全部跑完; spent", round(pixellab.spent_usd(), 4), flush=True)

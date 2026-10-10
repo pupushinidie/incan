@@ -1,0 +1,430 @@
+{
+ "hz-fire": {
+  "src": "out/r1/v2/hz-fire/hz-fire-7.png",
+  "cand": "hz-fire#7",
+  "alts": [
+   "hz-fire#22",
+   "hz-fire#38"
+  ],
+  "why": "篝火最旺、火舌多层，1× 也一眼是火"
+ },
+ "hz-mummy": {
+  "src": "out/r1/v2/hz-mummy2/hz-mummy2.png",
+  "cand": "hz-mummy2#0",
+  "alts": [
+   "hz-mummy2#17",
+   "hz-mummy2#32"
+  ],
+  "why": "双臂前伸的经典木乃伊姿势，比第一批咧嘴挥手的更像危险"
+ },
+ "hz-rocks": {
+  "src": "out/r1/v2/hz-rocks/hz-rocks-15.png",
+  "cand": "hz-rocks#15",
+  "alts": [
+   "hz-rocks#22",
+   "hz-rocks#56"
+  ],
+  "why": "石块最大、明暗最清楚，1× 认得出是落石"
+ },
+ "hz-snake": {
+  "src": "out/r1/v2/hz-snake/hz-snake-12.png",
+  "cand": "hz-snake#12",
+  "alts": [
+   "hz-snake#1",
+   "hz-snake#4"
+  ],
+  "why": "盘着吐信的毒蛇，不带眼镜蛇的颈褶（安第斯没有眼镜蛇），红信子在暗红底上也显眼"
+ },
+ "hz-spider": {
+  "src": "out/r1/v2/hz-spider2/hz-spider2-24.png",
+  "cand": "hz-spider2#24",
+  "alts": [
+   "hz-spider2#8",
+   "hz-spider2#40"
+  ],
+  "why": "紫身橙腿，压在暗红卡上看得清；第一批黑蜘蛛看不见"
+ },
+ "af-mask": {
+  "src": "out/r1/v2/af-mask/af-mask-7.png",
+  "cand": "af-mask#7",
+  "alts": [
+   "af-mask#13",
+   "af-mask#38"
+  ],
+  "why": "太阳冠 + 绿松石眼，像印加金面具，不像法老"
+ },
+ "af-llama": {
+  "src": "out/r1/v2/af-llama/af-llama.png",
+  "cand": "af-llama#0",
+  "alts": [
+   "af-llama#16",
+   "af-llama#28"
+  ],
+  "why": "金羊驼带红鞍毯，轮廓最清楚"
+ },
+ "af-sun": {
+  "src": "out/r1/v2/af-sun/af-sun.png",
+  "cand": "af-sun#0",
+  "alts": [
+   "af-sun#21",
+   "af-sun#33"
+  ],
+  "why": "最亮的日轮，放射纹清楚"
+ },
+ "af-tumi": {
+  "src": "out/r1/v2/af-tumi/af-tumi-13.png",
+  "cand": "af-tumi#13",
+  "alts": [
+   "af-tumi#3",
+   "af-tumi#29"
+  ],
+  "why": "顶上神像 + 底下半月刃，最像图米祭刀"
+ },
+ "af-idol": {
+  "src": "out/r1/v2/af-idol/af-idol-4.png",
+  "cand": "af-idol#4",
+  "alts": [
+   "af-idol#7",
+   "af-idol#20"
+  ],
+  "why": "坐姿神像，额头绿宝石，和面具区分得开"
+ },
+ "gems-1": {
+  "src": "out/r1/v2/gems-1/gems-1-5.png",
+  "cand": "gems-1#5",
+  "alts": [
+   "gems-1#8",
+   "gems-1#12"
+  ],
+  "why": "一颗圆润的祖母绿，没有带泥地"
+ },
+ "gems-s": {
+  "src": "out/r1/v2/gems-s/gems-s-24.png",
+  "cand": "gems-s#24",
+  "alts": [
+   "gems-s#16",
+   "gems-s#40"
+  ],
+  "why": "两颗完整的宝石，没有被画布边裁掉"
+ },
+ "gems-m": {
+  "src": "out/r1/v2/gems-m/gems-m.png",
+  "cand": "gems-m#0",
+  "alts": [
+   "gems-m#9",
+   "gems-m#61"
+  ],
+  "why": "一小簇立着的宝石，比两颗明显多"
+ },
+ "gems-l": {
+  "src": "out/r1/v2/gems-l/gems-l-6.png",
+  "cand": "gems-l#6",
+  "alts": [
+   "gems-l#14",
+   "gems-l#49"
+  ],
+  "why": "一大堆，比中档明显多"
+ },
+ "tent": {
+  "src": "out/r1/v2/tent/tent-1.png",
+  "cand": "tent#1",
+  "alts": [
+   "tent#25",
+   "tent#41"
+  ],
+  "why": "正面门帘 + 门缝结构清楚，可以用同一张做关门/开门两版，换 8 色都好看"
+ },
+ "explorer": {
+  "src": "out/r1/v2/explorer/explorer-12.png",
+  "cand": "explorer#12",
+  "alts": [
+   "explorer#0",
+   "explorer#44"
+  ],
+  "why": "浅色草帽 + 纯色上衣 + 举火把，上衣好换色；不是牛仔帽皮夹克，不像印第安纳·琼斯"
+ },
+ "ch-torch": {
+  "src": "out/r1/v2/ch-torch/ch-torch.png",
+  "cand": "ch-torch#0",
+  "alts": [
+   "ch-torch#15",
+   "ch-torch#24"
+  ],
+  "why": "火焰大、柄短，按钮上 2× 很醒目"
+ },
+ "ch-camp": {
+  "src": "out/r1/v2/ch-camp/ch-camp-16.png",
+  "cand": "ch-camp#16",
+  "alts": [
+   "ch-camp#0",
+   "ch-camp#2"
+  ],
+  "why": "米色帐篷 + 门口篝火，和玩家色帐篷分得开"
+ },
+ "torch": {
+  "src": "out/r1/v2/torch/torch-21.png",
+  "cand": "torch#21",
+  "alts": [
+   "torch#13",
+   "torch#29"
+  ],
+  "why": "火苗大的细柄火把，做火把动画的首帧"
+ },
+ "ic-gem": {
+  "src": "out/r1/v2/ic-gem/ic-gem-9.png",
+  "cand": "ic-gem#9",
+  "alts": [
+   "ic-gem#13",
+   "ic-gem#42"
+  ],
+  "why": "刻面宝石，16px 也认得"
+ },
+ "ic-artifact": {
+  "src": "out/r1/v2/ic-artifact/ic-artifact.png",
+  "cand": "ic-artifact#0",
+  "alts": [
+   "ic-artifact#16",
+   "ic-artifact#20"
+  ],
+  "why": "金色小神像，和宝石一眼分开"
+ },
+ "ic-deck": {
+  "src": "out/r1/v2/ic-deck2/ic-deck2-48.png",
+  "cand": "ic-deck2#48",
+  "alts": [
+   "ic-deck2#0",
+   "ic-deck2#4"
+  ],
+  "why": "三张叠着的深绿牌背、金色记号，16px 最干净"
+ },
+ "ic-tent": {
+  "src": "out/r1/v2/ic-tent/ic-tent-4.png",
+  "cand": "ic-tent#4",
+  "alts": [
+   "ic-tent#20",
+   "ic-tent#36"
+  ],
+  "why": "中性米色帐篷"
+ },
+ "ic-torch": {
+  "src": "out/r1/v2/ic-torch/ic-torch.png",
+  "cand": "ic-torch#0",
+  "alts": [
+   "ic-torch#1",
+   "ic-torch#16"
+  ],
+  "why": "橙火把，和继续按钮一致"
+ },
+ "ic-camp-fire": {
+  "src": "out/r1/v2/ic-camp2/ic-camp2-16.png",
+  "cand": "ic-camp2#16",
+  "alts": [
+   "ic-camp2#19",
+   "ic-camp2#2"
+  ],
+  "why": "「离开」图标里的小篝火（和帐篷合成）"
+ },
+ "ic-wait": {
+  "src": "out/r1/v2/ic-wait/ic-wait-1.png",
+  "cand": "ic-wait#1",
+  "alts": [
+   "ic-wait#3",
+   "ic-wait#8"
+  ],
+  "why": "木框沙漏"
+ },
+ "ic-skull": {
+  "src": "out/r1/v2/ic-skull/ic-skull.png",
+  "cand": "ic-skull#0",
+  "alts": [
+   "ic-skull#4",
+   "ic-skull#12"
+  ],
+  "why": "干净的白骷髅（没带海盗头巾之类）"
+ },
+ "ic-crown": {
+  "src": "out/r1/v2/ic-crown/ic-crown-6.png",
+  "cand": "ic-crown#6",
+  "alts": [
+   "ic-crown#5",
+   "ic-crown#36"
+  ],
+  "why": "金冠绿宝石"
+ },
+ "ic-temple": {
+  "src": "out/r1/v2/ic-temple2/ic-temple2.png",
+  "cand": "ic-temple2#0",
+  "alts": [
+   "ic-temple2#1",
+   "ic-temple2#16"
+  ],
+  "why": "阶梯小金字塔 + 门，第一批像圆顶小屋"
+ },
+ "ic-fire": {
+  "src": "out/r1/v2/ic-fire/ic-fire.png",
+  "cand": "ic-fire#0",
+  "alts": [
+   "ic-fire#6",
+   "ic-fire#16"
+  ],
+  "why": "单簇火苗"
+ },
+ "ic-mummy": {
+  "src": "out/r1/v2/ic-mummy/ic-mummy.png",
+  "cand": "ic-mummy#0",
+  "alts": [
+   "ic-mummy#8",
+   "ic-mummy#18"
+  ],
+  "why": "缠绷带的头 + 红眼"
+ },
+ "ic-rocks": {
+  "src": "out/r1/v2/ic-rocks/ic-rocks.png",
+  "cand": "ic-rocks#0",
+  "alts": [
+   "ic-rocks#17",
+   "ic-rocks#24"
+  ],
+  "why": "两块灰石"
+ },
+ "ic-snake": {
+  "src": "out/r1/v2/ic-snake/ic-snake-3.png",
+  "cand": "ic-snake#3",
+  "alts": [
+   "ic-snake#4",
+   "ic-snake#33"
+  ],
+  "why": "绿蛇，16px 轮廓清楚"
+ },
+ "ic-spider": {
+  "src": "out/r1/v2/ic-spider2/ic-spider2.png",
+  "cand": "ic-spider2#0",
+  "alts": [
+   "ic-spider2#9",
+   "ic-spider2#36"
+  ],
+  "why": "紫身橙腿，夜间底上看得见"
+ },
+ "boulder-0": {
+  "src": "out/r1/v2/boulder/boulder-4.png",
+  "cand": "boulder#4",
+  "alts": [],
+  "why": "塌方动画用的石块"
+ },
+ "boulder-1": {
+  "src": "out/r1/v2/boulder/boulder-16.png",
+  "cand": "boulder#16",
+  "alts": [],
+  "why": "塌方动画用的石块"
+ },
+ "boulder-2": {
+  "src": "out/r1/v2/boulder/boulder-31.png",
+  "cand": "boulder#31",
+  "alts": [],
+  "why": "塌方动画用的石块"
+ },
+ "boulder-3": {
+  "src": "out/r1/v2/boulder/boulder-46.png",
+  "cand": "boulder#46",
+  "alts": [],
+  "why": "塌方动画用的石块"
+ },
+ "boulders": {
+  "keys": [
+   "boulder-0",
+   "boulder-1",
+   "boulder-2",
+   "boulder-3"
+  ]
+ },
+ "scene-night": {
+  "src": "out/r1/scenes/scene-night-s32.png",
+  "cand": "scene-night-s32",
+  "alts": [
+   "scene-night-s31",
+   "scene-night-s33"
+  ],
+  "why": "梯形门洞 + 四支火把 + 地上发光宝石，中下部地面空，最符合 spec"
+ },
+ "scene-day": {
+  "src": "out/r1/scenes/scene-day-s32.png",
+  "cand": "scene-day-s32",
+  "alts": [
+   "scene-day-s31",
+   "scene-day-s33"
+  ],
+  "why": "左上斜射的阳光光柱，门洞上窄下宽，是印加不是吴哥"
+ },
+ "back-tex": {
+  "src": "out/r1/flux/back-tex-s942.png",
+  "cand": "back-tex-s942",
+  "alts": [
+   "back-tex-s941",
+   "back-tex-s943"
+  ],
+  "why": "苔绿多边形石块纹理；阶梯十字用代码画（PixelLab 画成了基督教十字架）"
+ },
+ "banner": {
+  "src": "out/r1/flux/banner-s921.png",
+  "cand": "banner-s921",
+  "alts": [
+   "banner-s922",
+   "banner-s923"
+  ],
+  "why": "石板 + 金边 + 两头暗红垂幔，中间空着放字"
+ },
+ "chest": {
+  "src": "out/r1/flux/chest-s932.png",
+  "cand": "chest-s932",
+  "alts": [
+   "chest-s931",
+   "chest-s933"
+  ],
+  "why": "金角宝箱堆满绿宝石，最亮最有喜感；s933 里那张脸像骷髅"
+ },
+ "fx-torch": {
+  "frames": [
+   "out/r1/anim/anim-torch-b/anim-torch-b-00.png",
+   "out/r1/anim/anim-torch-b/anim-torch-b-01.png",
+   "out/r1/anim/anim-torch-b/anim-torch-b-02.png",
+   "out/r1/anim/anim-torch-b/anim-torch-b-03.png",
+   "out/r1/anim/anim-torch-b/anim-torch-b-04.png",
+   "out/r1/anim/anim-torch-b/anim-torch-b-05.png"
+  ],
+  "crop_x": 8,
+  "cand": "anim-torch-b",
+  "alts": [
+   "anim-torch-a",
+   "anim-torch-c"
+  ],
+  "why": "火苗左右摆动，第 0 帧就是静态火把，循环无缝"
+ },
+ "cover": {
+  "src": "out/covers/cover-1.png",
+  "cand": "pcover-door-s952",
+  "alts": [
+   "pcover-collapse-s954",
+   "pcover-camp-s955"
+  ],
+  "why": "见封面"
+ },
+ "fx-collapse": {
+  "frames": [
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-00.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-01.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-02.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-03.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-04.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-05.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-06.png",
+   "out/r1/anim/anim-collapse-7201/anim-collapse-7201-07.png"
+  ],
+  "cand": "anim-collapse-7201",
+  "alts": [
+   "anim-collapse-7202",
+   "anim-collapse-7203",
+   "代码版"
+  ],
+  "why": "石块落地后扬起一团褐色尘土，比代码版的小石块和淡烟尘醒目；后两帧代码抖动渐隐。7202 尘土一帧突然消失，7203 冒出火苗（画错）"
+ }
+}

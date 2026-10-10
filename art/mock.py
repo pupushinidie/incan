@@ -6,8 +6,8 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "art"))
 import simple as S  # noqa
-A = ROOT / "apps/web/public/art"
-OUT = ROOT / "art/out/mock"
+A = ROOT / ("art/out/final" if "--final" in sys.argv else "apps/web/public/art")
+OUT = ROOT / ("art/out/mock-final" if "--final" in sys.argv else "art/out/mock")
 OUT.mkdir(parents=True, exist_ok=True)
 
 def L(rel, k=1):

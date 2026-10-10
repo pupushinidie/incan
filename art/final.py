@@ -106,8 +106,28 @@ def fit_bottom(img: Image.Image, w: int, h: int) -> Image.Image:
     return out
 
 
+def strip_white_bg(img: Image.Image, thr: int = 236) -> Image.Image:
+    """v2 偶尔不出透明底、给一片白底：从四边把和边缘连通的近白像素抠掉。"""
+    img = img.copy()
+    px = img.load()
+    w, h = img.size
+    def white(x, y):
+        r, g, b, a = px[x, y]
+        return a and min(r, g, b) >= thr
+    stack = [(x, y) for x in range(w) for y in (0, h - 1)] + [(x, y) for y in range(h) for x in (0, w - 1)]
+    seen = set()
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < w and 0 <= y < h) or not white(x, y):
+            continue
+        seen.add((x, y))
+        px[x, y] = CLEAR
+        stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    return img
+
+
 def prep(key: str, w: int, h: int, bottom=False) -> Image.Image:
-    img = drop_specks(clean_alpha(src(key)), SEL[key].get("speck", 3))
+    img = drop_specks(clean_alpha(strip_white_bg(src(key))), SEL[key].get("speck", 3))
     for box in SEL[key].get("erase", []):  # 手工抹掉的区域 [x0,y0,x1,y1]
         ImageDraw.Draw(img).rectangle(box, fill=CLEAR)
     return (fit_bottom if bottom else fit)(img, w, h)
@@ -181,12 +201,18 @@ def illus_window(card: Image.Image, ill: Image.Image) -> None:
     card.alpha_composite(ill, (3, 4))
 
 
+def gem_tier(v: int) -> str:
+    """宝石堆分 4 档：1 → 一颗；2–4 → 两三颗；5–9 → 一小堆；11–17 → 一大堆。"""
+    return "gems-1" if v == 1 else "gems-s" if v <= 4 else "gems-m" if v <= 9 else "gems-l"
+
+
 def treasure(v: int) -> Image.Image:
     img = card_frame("treasure")
     t = S.text_img(str(v), S.C["cream"], 2, INK)
-    tier = "gems-s" if v <= 4 else "gems-m" if v <= 9 else "gems-l"
-    pile = prep(tier, 34, 52 - 3 - t.height, bottom=True)
-    img.alpha_composite(pile, (3, 3 + t.height))
+    top = 3 + t.height
+    pile = prep(gem_tier(v), 32, 52 - top - 1, bottom=True)
+    pile = S.outline(pile)  # 深色描边，绿宝石压在丛林绿底上也分得开
+    img.alpha_composite(pile, (4, top))
     img.alpha_composite(t, ((S.CARD_W - t.width) // 2, 3))
     return img
 
@@ -206,21 +232,69 @@ def artifact(n: int, key: str, name: str) -> Image.Image:
 
 
 def back() -> Image.Image:
+    """牌背：石板框（代码）+ PixelLab 苔石纹理（back-tex）+ 代码画的金色印加阶梯十字（PixelLab 会画成基督教十字架，不用它画）。"""
     img = S.card_base(S.C["stone1"], S.C["stone2"], S.C["stone0"], S.C["slate"], S.C["slate_l"])
-    b = src("back").crop((0, 0, 36, 52))
-    img.alpha_composite(b.crop((1, 1, 35, 51)), (3, 3))  # 内框 34×50，保留代码画的石板框
+    tex = src("back-tex").crop((1, 1, 35, 51))  # 34×50 内框
+    img.alpha_composite(tex, (3, 3))
+    d = ImageDraw.Draw(img)
+    d.rectangle([3, 3, S.CARD_W - 4, S.CARD_H - 4], outline=S.C["moss"])
+    ch = S.bevel(S.outline(S.chakana(22, S.C["gold_m"], 2)), 0.4, 0.3)
+    img.alpha_composite(ch, ((S.CARD_W - ch.width) // 2, (S.CARD_H - ch.height) // 2))
     return img
 
 
 # ---------------- 玩家 ----------------
 
+def _tent_parts(img: Image.Image):
+    """选中的 v2 帐篷（tent-1）正面是橙色的门帘、中间一道黑缝。返回（门帘像素集合, 门缝像素集合）。"""
+    px = img.load()
+    w, h = img.size
+
+    def orange(p):
+        if not p[3]:
+            return False
+        hh, ss, vv = hsv(p)
+        return (hh < 0.15 or hh > 0.95) and ss > 0.25 and vv > 0.2
+
+    front = {(x, y) for y in range(h) for x in range(w) if orange(px[x, y])}
+    slit = set()
+    for y in range(h):
+        for x in range(1, w - 1):
+            p = px[x, y]
+            if p[3] and hsv(p)[2] < 0.2:
+                if any((x - k, y) in front for k in (1, 2)) and any((x + k, y) in front for k in (1, 2)):
+                    slit.add((x, y))
+    return front, slit
+
+
 def tent_img(hexcol: str, shape: str, home: bool) -> Image.Image:
-    key = "tent-home" if home else "tent"
-    base = prep(key, 32, 24, bottom=True)
-    reg = SEL[key].get("region")
-    img = recolor(base, hexcol, region=reg)
-    mk = S.mark(shape, S.rgb(hexcol) if home else S.lighten(S.rgb(hexcol), 0.3), 9)
-    mx, my = SEL[key].get("mark", (12, 12))
+    """关门（还在神庙）：门帘和帆布同色（玩家色，正面受火光稍亮），黑缝当门缝。
+    回营地：门帘掀开，里面一片暖光（火把橙 → 门缝处最亮的暖黄）。侧面一律按玩家色换色，门帘上不放记号，记号画在侧面。"""
+    base = prep("tent", 32, 24, bottom=True)
+    front, slit = _tent_parts(base)
+    img = recolor(base, hexcol, region=SEL["tent"].get("region"))
+    px = img.load()
+    src_px = base.load()
+    lum = {q: 0.299 * src_px[q][0] + 0.587 * src_px[q][1] + 0.114 * src_px[q][2] for q in front}
+    lo, hi = (min(lum.values()), max(lum.values())) if lum else (0, 0)
+    tgt = S.rgb(hexcol)
+    light_target = sum(tgt[:3]) > 600
+    for q, l in lum.items():
+        t = (l - lo) / (hi - lo) if hi > lo else 0.5
+        if home:
+            c = S.mix(S.C["torch_d"], S.C["torch"], t)
+        else:
+            c = S.mix(S.darken(tgt, 0.3 if light_target else 0.2), S.lighten(tgt, 0.05 if light_target else 0.22), t)
+        px[q] = c[:3] + (255,)
+    if home:
+        for q in slit:
+            px[q] = S.C["torch_l"][:3] + (255,)
+        for (x, y) in slit:  # 门缝两边各亮一列
+            for dx in (-1, 1):
+                if (x + dx, y) in front:
+                    px[x + dx, y] = S.mix(S.C["torch_l"], S.C["torch"], 0.4)[:3] + (255,)
+    mk = S.mark(shape, S.lighten(tgt, 0.45) if not light_target else S.darken(tgt, 0.45), 9)
+    mx, my = SEL["tent"].get("mark", (16, 7))
     img.alpha_composite(mk, (mx, my))
     return img
 
@@ -231,6 +305,18 @@ def explorer_img(hexcol: str) -> Image.Image:
 
 
 # ---------------- 选择 ----------------
+
+def icon_camp() -> Image.Image:
+    """「离开」小图：中性帐篷（ic-tent）+ 右下角一小堆篝火（ic-camp-fire 缩到 60%）。
+    单独一团火会和危险「火焰」混，单独帐篷又和「帐篷 N 颗」混，所以合成。"""
+    tent = trim(prep("ic-tent", 16, 16))
+    fire = trim(prep("ic-camp-fire", 16, 16))
+    fire = clean_alpha(fire.resize((max(1, fire.width * 6 // 10), max(1, fire.height * 6 // 10)), Image.LANCZOS))
+    out = Image.new("RGBA", (16, 16), CLEAR)
+    out.alpha_composite(tent, (0, 16 - tent.height))
+    out.alpha_composite(fire, (16 - fire.width, 16 - fire.height))
+    return out
+
 
 def choice_card(kind: str) -> Image.Image:
     W, H = 24, 32
@@ -247,7 +333,7 @@ def choice_card(kind: str) -> Image.Image:
         ch = S.bevel(S.outline(S.chakana(11, S.C["gold_m"], 1)), 0.4, 0.3)
         img.alpha_composite(ch, ((W - ch.width) // 2, (H - ch.height) // 2))
     else:
-        icon = prep("ic-torch" if kind == "torch" else "ic-camp", 20, 28)
+        icon = prep("ic-torch", 20, 28) if kind == "torch" else fit(icon_camp(), 20, 28)
         img.alpha_composite(icon, (2, 2))
     return img
 
@@ -276,6 +362,27 @@ def fx_gem_spin() -> Image.Image:
         f.alpha_composite(sq, ((16 - sq.width) // 2, (16 - sq.height) // 2))
         frames.append(f)
     return S.strip(frames)
+
+
+def dither_fade(img: Image.Image, keep: float) -> Image.Image:
+    """按固定抖动图样去掉一部分像素（keep = 留下的比例），像烟尘散开；不用半透明。"""
+    out = img.copy()
+    px = out.load()
+    bayer = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
+    for y in range(out.height):
+        for x in range(out.width):
+            if px[x, y][3] and (bayer[y % 4][x % 4] + 0.5) / 16 >= keep:
+                px[x, y] = CLEAR
+    return out
+
+
+def fx_collapse_px() -> Image.Image:
+    """塌方 PixelLab 版：animate 出的 10 帧（首帧 = 石块静态），取前 8 帧，最后 2 帧用第 8 帧抖动渐隐（55%、15%），
+    播一次停在几乎透明的末帧。"""
+    sel = SEL["fx-collapse"]
+    fr = [clean_alpha(Image.open(ART / f).convert("RGBA")) for f in sel["frames"][:8]]
+    fr += [dither_fade(fr[-1], 0.55), dither_fade(fr[-1], 0.15)]
+    return S.strip(fr)
 
 
 def fx_collapse() -> Image.Image:
@@ -343,8 +450,9 @@ def build() -> None:
     for k in ("torch", "camp", "back"):
         save(choice_card(k), f"choice/card-{k}.png")
 
-    for k in ("gem", "artifact", "deck", "tent", "torch", "camp", "wait", "skull", "crown", "temple"):
+    for k in ("gem", "artifact", "deck", "tent", "torch", "wait", "skull", "crown", "temple"):
         save(prep(f"ic-{k}", 16, 16), f"icons/{k}.png")
+    save(icon_camp(), "icons/camp.png")
     save(S.icon_hidden(), "icons/hidden.png")
     for k, _ in S.HAZARDS:
         save(prep(f"ic-{k}", 16, 16), f"icons/hazard-{k}.png")
@@ -357,7 +465,7 @@ def build() -> None:
     save(fx_torch(), "fx/torch.png")
     save(fx_gem_spin(), "fx/gem-spin.png")
     save(S.fx_sparkle(), "fx/sparkle.png")
-    save(fx_collapse(), "fx/collapse.png")
+    save(fx_collapse_px() if "fx-collapse" in SEL else fx_collapse(), "fx/collapse.png")
     save(S.fx_crack(), "fx/crack.png")
 
     save(prep("banner", 160, 32), "ui/banner.png")
