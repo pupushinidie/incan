@@ -273,3 +273,7 @@ Object.defineProperty(socket, "id", { value: previewSocketId("p1") }); // 冒充
 - `room:updated` 的快照（`LobbyRoomSnapshot`）：`game` 已按收件人脱敏；`turnRemainingMs` 是这一步剩余毫秒：`decide` 阶段是这张牌的决定倒计时（还有在线真人没决定时才有，所有人都收到）；自动阶段是离自动推进还有多久。
 - `room:create {name, capacity: 3–8, options?: {noArtifacts}}`，`room:settings {noArtifacts}`（房主在等候房间改），其余房间事件和全站一样（见 `roomTypes.ts`）。
 - `game:command` 发上面的命令。
+
+## 声音
+
+这款还没有背景音乐（`App.tsx` 用 `NO_BGM`），进了房间和教程里顶栏照样有 ♪ 面板调音效和语音。动作音效在 `apps/web/src/game-sfx.ts`（`useGameSfx`，GameBoard 和新手教程共用），按每一步的引擎事件出声，全部用 `gm-sound.tsx` 即时合成：新一局 → 洗牌 + 开局音，每局第一次要选时 → 轮到你；翻牌 → 翻牌声，宝物 → 宝石叮当（自己还在神庙里就响），危险 → 每种危险自己的招牌声（火焰呼呼、木乃伊低吼、落石隆隆、蛇嘶嘶、蜘蛛窸窣），神器 → 亮晶晶的琶音；点「继续挖 / 回营地」→ 选中音，有人选好了 → 盖牌声（别人的减半，不透露选了什么），撤回 → 取消音；同时亮出 → 揭晓音；回营地 → 宝石倒进帐篷 + 进账，带走神器 → 琶音；第二张同样的危险 → 危险声 + 塌方轰隆，被困 → 下滑音；超时、终局赢/输也有提示音。最后 5 秒倒计时每秒一声。房间里有人进出、开局、收到聊天、操作被拒绝也有提示音（`App.tsx`）。

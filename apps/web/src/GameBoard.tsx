@@ -23,6 +23,7 @@ import { art, coverSize, seatColor, SEAT_HEX } from "./art.js";
 import GameRules from "./GameRules.js";
 import { useLayout, type Layout } from "./layout.js";
 import { GameRoomMenu } from "./RoomExtras.js";
+import { useCountdownSfx, useGameSfx } from "./game-sfx.js";
 import { socket } from "./socket.js";
 import { Coach, TipToast } from "./tutorial/Coach.js";
 import { useFirstTimeTips } from "./tutorial/tips.js";
@@ -64,8 +65,8 @@ interface GameBoardProps {
 
 function useCountdown(room: LobbyRoomSnapshot): number | null {
   const [now, setNow] = useState(Date.now());
-  const [anchor, setAnchor] = useState({ at: Date.now(), ms: room.turnRemainingMs });
-  useEffect(() => setAnchor({ at: Date.now(), ms: room.turnRemainingMs }), [room]);
+  // 锚点和 room 在同一次渲染里算好：放在 effect 里的话，换步骤的第一帧会用上一步的剩余时间（倒计时音效会误响一声）
+  const anchor = useMemo(() => ({ at: Date.now(), ms: room.turnRemainingMs }), [room]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
@@ -143,6 +144,9 @@ function GameBoard({
   const amLast = myTurn && pending.length === 1;
   const actions = canDecide ? legalActions(game, selfId) : [];
   const chance = bustChance(game);
+  // 动作音效（见 game-sfx.ts）；自己要做决定的最后 5 秒每秒一声
+  useGameSfx(game, selfId);
+  useCountdownSfx(myTurn && game.phase === "decide", secondsLeft);
 
   // 「提示」：练习局随时能用；真实对局里只有自己和人机时能用（有别的真人就不显示，免得不公平）
   const botsOnly = room.members.length > 1 && room.members.every((candidate) => candidate.playerId === selfId || candidate.bot === true);
@@ -725,6 +729,7 @@ function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actio
           aria-pressed={choice === "stay"}
           onClick={() => onDecide("stay")}
           data-tutorial="btn-stay"
+          data-sfx="select"
           title="继续挖（键盘 1 或 ←）"
         >
           <Px src={art.choiceIcon("stay")} w={32} h={32} s={iconS} />
@@ -737,6 +742,7 @@ function ActionBar({ game, me, layout, spectating, autoPlaying, canDecide, actio
           aria-pressed={choice === "leave"}
           onClick={() => onDecide("leave")}
           data-tutorial="btn-leave"
+          data-sfx="select"
           title="回营地（键盘 2 或 →）"
         >
           <Px src={art.choiceIcon("leave")} w={32} h={32} s={iconS} />

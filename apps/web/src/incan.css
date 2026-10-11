@@ -736,3 +736,7 @@
 .ig-screen.with-side .tut-toast p { flex: 1 1 180px; }
 .ig-screen.with-side .tut-toast-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; width: 100%; }
 .ig-screen:not(.with-side):not(.mobile) .tut-toast { top: 46%; }
+
+/* ♪ 声音按钮在新手教程的压暗层（.tut-block，z-index 1000）上面也能点，面板也压在它上面：随时能调音量。 */
+.gm-music-toggle { position: relative; z-index: 1004; }
+body .gm-music-panel { z-index: 1005; }
