@@ -9,7 +9,7 @@ import RoomChat from "./RoomChat.js";
 import { roomRole, RoomSettingsPanel, SeatSwitch } from "./RoomExtras.js";
 import { socket } from "./socket.js";
 import { ThemeToggle, useTheme } from "./theme.js";
-import { NO_BGM, sfx, SoundToggle, useBgm, useRoomSfx } from "./gm-sound.js";
+import { type BgmTrack, sfx, SoundToggle, useBgm, useRoomSfx } from "./gm-sound.js";
 import { TutorialInvite } from "./tutorial/Invite.js";
 import { readTutorial } from "./tutorial/storage.js";
 import { GAME_ID } from "./tutorialGame.js";
@@ -26,6 +26,9 @@ const CENTER_URL = import.meta.env.DEV ? `${window.location.protocol}//${window.
 function normalizeRoomCode(value: string): string {
   return value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g, "").slice(0, 6);
 }
+
+// 背景音乐：进了房间（等候房间、对局、观战）和新手教程里放，首页和房间列表不放。gain / start / end 按这首曲子量（见 gm-sound.tsx）。
+const BGM: BgmTrack = { src: `${import.meta.env.BASE_URL}bgm/incan.mp3`, gain: 0.77, start: 0.05, end: 176.0 };
 
 function App() {
   const [mode, setMode] = useState<EntryMode>("create");
@@ -49,7 +52,7 @@ function App() {
   // 新手教程：首页或等候房间点进来（地址带 ?tutorial 时直接打开，游戏中心可以直接链过来）
   const [tutorialOpen, setTutorialOpen] = useState(() => new URLSearchParams(window.location.search).has("tutorial"));
   // 声音：进了房间（等候房间、对局、观战）和新手教程里顶栏有 ♪ 面板（音效、语音音量）；这款还没有背景音乐。
-  useBgm(room || tutorialOpen ? NO_BGM : null);
+  useBgm(room || tutorialOpen ? BGM : null);
   // 房间提示音：有人进出、开局、收到别人的聊天（聊天最多留 100 条，按最后一条的 id 数新消息）
   const chatTick = useRef({ id: "", count: 0 });
   const lastChat = room?.chat.at(-1);
