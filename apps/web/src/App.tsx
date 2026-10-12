@@ -298,6 +298,7 @@ function App() {
   if (room) {
     return (
       <main className="app-shell ig-room">
+        <IgBackdrop src={art.scene(theme === "day")} />
         <header className="topbar">
           <Brand />
           <div className="topbar-right">
@@ -335,6 +336,7 @@ function App() {
 
   return (
     <main className="app-shell ig-home">
+      <IgBackdrop src={art.scene(theme === "day")} />
       <header className="topbar">
         <Brand />
         <div className="topbar-right">
@@ -463,6 +465,16 @@ function App() {
         </div>
       </section>
     </main>
+  );
+}
+
+/** 全屏背景：把对局场景铺满窗口（16:9 居中裁切），上面盖一层罩色让面板更突出。首页和等候房间放在 <main> 的第一个子元素。 */
+function IgBackdrop({ src }: { src: string }) {
+  return (
+    <div className="ig-backdrop" aria-hidden="true">
+      <div className="ig-backdrop-art" style={{ backgroundImage: `url(${src})` }} />
+      <div className="ig-backdrop-veil" />
+    </div>
   );
 }
 

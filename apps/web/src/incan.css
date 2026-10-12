@@ -740,3 +740,18 @@
 /* ♪ 声音按钮在新手教程的压暗层（.tut-block，z-index 1000）上面也能点，面板也压在它上面：随时能调音量。 */
 .gm-music-toggle { position: relative; z-index: 1004; }
 body .gm-music-panel { z-index: 1005; }
+
+/* ---------- 全屏背景：首页、等候房间的场景铺满窗口 ---------- */
+.ig-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #0c1a1c; }
+.ig-backdrop-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, calc(100vh * 16 / 9));
+  height: max(100vh, calc(100vw * 9 / 16));
+  transform: translate(-50%, -50%);
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+.ig-backdrop-veil { position: absolute; inset: 0; background: #060d0e; opacity: 0.4; }
+.app-shell.ig-home > :not(.ig-backdrop):not(.gm-modal-backdrop), .app-shell.ig-room > :not(.ig-backdrop):not(.gm-modal-backdrop) { position: relative; z-index: 1; }

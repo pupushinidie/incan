@@ -15,3 +15,7 @@
 :root[data-theme="day"] .ig-summary-banner { color: #f6e8b8; text-shadow: 1px 1px 0 #050a0b, -1px 0 0 #050a0b, 1px 0 0 #050a0b, 0 -1px 0 #050a0b, 0 1px 0 #050a0b; }
 :root[data-theme="day"] .app-shell .ig-final-banner h2 { color: #f6e8b8; text-shadow: 2px 2px 0 #050a0b, -2px 0 0 #050a0b, 2px 0 0 #050a0b, 0 -2px 0 #050a0b, 0 2px 0 #050a0b; }
 :root[data-theme="day"] .ig-hazard.boom small { color: #fff4ec; }
+
+/* 全屏背景：白天版罩色变浅 */
+:root[data-theme="day"] .ig-backdrop { background: #d9ecef; }
+:root[data-theme="day"] .ig-backdrop-veil { background: #ffffff; opacity: 0.25; }
